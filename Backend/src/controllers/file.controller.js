@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
+import dataSanitizer from "../helpers/dataSanitizer.js";
 import fs, { access } from "fs/promises";
 import path from "node:path";
 import appRootPath from "app-root-path";
 import { ObjectId } from "mongodb";
 import ApiError from "../helpers/apiError.js";
 import Directory from "../models/directory.model.js";
+import User from "../models/user.model.js";
 import File from "../models/file.model.js";
 import FileShare from "../models/fileShare.model.js";
 import updateParentSize from "../helpers/updateParentSize.js";
@@ -15,6 +17,12 @@ import {
   FILE_SEND_FAILED,
   DIR_NOT_FOUND,
 } from "../constants/errorCodes.js";
+import {
+  createObjectPresignedUrl,
+  deleteObject,
+  getObjectSize,
+  renameObject,
+} from "../services/aws.service.js";
 
 export const getFileContents = async (req, res, next) => {
   const fileId = req.params.fileId;
@@ -128,18 +136,42 @@ export const getFileContents = async (req, res, next) => {
   });
 };
 
-export const saveFile = async (req, res, next) => {
+export const initiateFileUpload = async (req, res, next) => {
+  const MAX_FILE_SIZE_LIMIT = parseInt(
+    process.env.MAX_FILE_SIZE_LIMIT || 50 * 1024 * 1024,
+  );
+
   const userId = req.targetUserId || req.session.user._id.toString();
   const parentDirId = req.params.parentDirId;
+  const fileSize = req.body.fileSize;
+  const fileType = req.body.fileType;
+  const fileName = req.body.fileName;
+
+  const user = await User.findById(userId).lean();
+  const rootDir = await Directory.findById(user.storageDir).lean();
+
+  const usedStorageInBytes = rootDir?.size || 0;
+  const maxStorageInBytes = user.maxStorageInBytes;
+  const availableSpace = Math.max(0, maxStorageInBytes - usedStorageInBytes);
+  const effectiveMaxLimit = Math.min(MAX_FILE_SIZE_LIMIT, availableSpace);
+
+  if (effectiveMaxLimit < fileSize) {
+    throw new ApiError(413, "File Too Large!", "FILE_SIZE_LIMIT_EXCEEDED");
+  }
+  if (dataSanitizer.sanitize(fileName) !== fileName) {
+    throw new ApiError(400, "Invalid filename!");
+  }
+  if (dataSanitizer.sanitize(fileType) !== fileType) {
+    throw new ApiError(400, "Invalid Filetype!");
+  }
+
+  const fileId = new ObjectId();
+  const fileExt = path.extname(fileName);
 
   // get the parentDir or assign the root directory
   const parentDir = parentDirId
     ? await Directory.findOne({ _id: parentDirId, user: userId }).lean()
-    : await Directory.findOne({
-        user: userId,
-        parentDir: null,
-      }).lean();
-
+    : rootDir;
   if (!parentDir)
     throw new ApiError(
       404,
@@ -147,14 +179,10 @@ export const saveFile = async (req, res, next) => {
       DIR_NOT_FOUND,
     );
 
-  const file = req.file;
-  const [fileId, _] = file.filename.split(".");
-  const fileExt = path.extname(file.filename);
-
   // check if a file with that name already exists in that directory
   const fileAlreadyExist = !!(await File.exists({
     parentDir: parentDir._id,
-    name: file.originalname,
+    name: fileName,
   }).lean());
   if (fileAlreadyExist) {
     throw new ApiError(
@@ -171,30 +199,66 @@ export const saveFile = async (req, res, next) => {
     // add entry in File
     await File.insertOne(
       {
-        _id: new ObjectId(fileId),
-        name: file.originalname,
-        size: file.size,
+        _id: fileId,
+        name: fileName,
+        size: fileSize,
         parentDir: parentDir._id,
         extname: fileExt,
+        isUploading: true,
         user: userId,
       },
       { session },
     );
-    await updateParentSize(parentDir._id, file.size, session);
+    const signedUrl = await createObjectPresignedUrl(
+      fileId + fileExt,
+      fileSize,
+      fileType,
+    );
 
     await session.commitTransaction();
-    res.status(201).json({ message: "Got the File!" });
+    res
+      .status(201)
+      .json({ message: "Got the File Metadata!", fileId, signedUrl });
   } catch (error) {
     await session.abortTransaction();
     throw error;
   }
 };
 
+export const completeFileUpload = async (req, res, next) => {
+  const userId = req.targetUserId || req.session.user._id.toString();
+  const fileId = req.params.fileId;
+
+  const file = await File.findOne({ _id: fileId, user: userId });
+
+  // file must exist and not been uploaded
+  if (!file) throw new ApiError(404, "File not found!");
+  if (!file.isUploading) throw new ApiError(400, "File was already uploaded!");
+
+  // checking if the uploaded file's size is the expected size
+  const uploadedSize = await getObjectSize(file._id.toString() + file.extname);
+  if (uploadedSize !== file.size) {
+    await File.deleteOne({ _id: file._id });
+    await deleteObject(file._id.toString() + file.extname);
+
+    throw new ApiError(
+      400,
+      "You are not allowed to upload more than the Limit!",
+    );
+  }
+
+  // mark the file as uploaded! & update it's ancestors size
+  file.isUploading = false;
+  await file.save();
+  await updateParentSize(file.parentDir, file.size);
+
+  res.status(201).json({ message: "File Upload Completed!" });
+};
+
 export const renameFile = async (req, res, next) => {
   const fileId = req.params.fileId;
   const newFilename = req.body.newFilename;
   const newExt = path.extname(newFilename);
-  const parentPath = path.join(appRootPath.path, "storage");
 
   const file = req.fileDoc
     ? req.fileDoc
@@ -221,10 +285,7 @@ export const renameFile = async (req, res, next) => {
   // renaming when extension differs
   if (oldExt != newExt) {
     try {
-      await fs.rename(
-        path.join(parentPath, fileId + oldExt),
-        path.join(parentPath, fileId + newExt),
-      );
+      await renameObject(fileId + oldExt, fileId + newExt);
     } catch (error) {
       // rollback changes
       await File.findByIdAndUpdate(file._id, { $set: { name: file.name } });
@@ -253,17 +314,8 @@ export const setAllowAnyone = async (req, res, next) => {
 export const deleteFile = async (req, res, next) => {
   const fileId = req.params.fileId;
 
-  const file = req.fileDoc
-    ? req.fileDoc
-    : await File.findById(req.params.fileId).lean();
+  const file = req.fileDoc ? req.fileDoc : await File.findById(fileId).lean();
   if (!file) throw new ApiError(404, "File not found!", FILE_NOT_FOUND);
-
-  // remove file from storage
-  const fullpath = path.join(
-    appRootPath.path,
-    "storage/",
-    fileId + file.extname,
-  );
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -274,7 +326,8 @@ export const deleteFile = async (req, res, next) => {
     await File.findByIdAndDelete(file._id, { session });
     await updateParentSize(file.parentDir, -file.size, session);
 
-    await fs.rm(fullpath, { recursive: true, force: true });
+    // remove file from storage
+    await deleteObject(fileId + file.extname);
 
     await session.commitTransaction();
     res.status(200).json({ message: "File Deleted!" });

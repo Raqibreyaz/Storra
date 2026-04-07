@@ -1,3 +1,5 @@
+- s3 file upload from frontend
+- get file functionality using s3
 - directory sharing functionality with the help of path property
 - double click to view directory or file
 - single click to select and ctrl + single-click to select multiple

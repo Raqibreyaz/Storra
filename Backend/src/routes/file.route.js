@@ -4,8 +4,9 @@ import {
   deleteFile,
   getFileContents,
   renameFile,
-  saveFile,
   setAllowAnyone,
+  initiateFileUpload,
+  completeFileUpload,
 } from "../controllers/file.controller.js";
 import authorizeDataAccess from "../middlewares/authorizeDataAccess.middleware.js";
 import checkFileAccessAllowed from "../middlewares/checkFileAccess.middleware.js";
@@ -14,6 +15,7 @@ import {
   getFileSchema,
   renameFileSchema,
   setAllowAnyoneSchema,
+  initiateFileUploadSchema,
 } from "../validators/file.validator.js";
 import {
   readLimiter,
@@ -21,7 +23,6 @@ import {
   mutateLimiter,
 } from "../middlewares/rateLimiter.middleware.js";
 import throttleRequest from "../middlewares/throttleRequest.middleware.js";
-import fileUpload from "../middlewares/limitedFileSizeUploader.middleware.js";
 
 const router = express.Router();
 
@@ -31,11 +32,17 @@ router.param("parentDirId", validateId);
 
 /* for [data_owner, viewer, editor] only */
 router.post(
-  "/{:parentDirId}",
+  "/initiate/{:parentDirID}",
+  uploadLimiter,
+  validate(initiateFileUploadSchema),
+  throttleRequest("WRITE"),
+  initiateFileUpload,
+);
+router.post(
+  "/complete/:fileId",
   uploadLimiter,
   throttleRequest("WRITE"),
-  fileUpload,
-  saveFile,
+  completeFileUpload,
 );
 
 router.get(
@@ -75,12 +82,19 @@ router.delete(
 
 /* for [data_owner, app_owner, admin] only */
 router.post(
-  "/:userId/{:parentDirId}",
+  "/initiate/:userId/{:parentDirID}",
+  uploadLimiter,
+  validate(initiateFileUploadSchema),
+  throttleRequest("WRITE"),
+  authorizeDataAccess,
+  initiateFileUpload,
+);
+router.post(
+  "/complete/:userId/:fileId",
   uploadLimiter,
   throttleRequest("WRITE"),
   authorizeDataAccess,
-  fileUpload,
-  saveFile,
+  completeFileUpload,
 );
 
 router.get(

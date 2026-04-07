@@ -31,6 +31,10 @@ const fileSchema = new mongoose.Schema(
       enum: ["View", "Edit", null],
       default: null,
     },
+    isUploading: {
+      type: Boolean,
+      default: true,
+    },
   },
   { strict: "throw", timestamps: true },
 );
