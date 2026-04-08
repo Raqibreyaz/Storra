@@ -7,6 +7,7 @@ import {
   setAllowAnyone,
   initiateFileUpload,
   completeFileUpload,
+  cancelFileUpload,
 } from "../controllers/file.controller.js";
 import authorizeDataAccess from "../middlewares/authorizeDataAccess.middleware.js";
 import checkFileAccessAllowed from "../middlewares/checkFileAccess.middleware.js";
@@ -37,6 +38,12 @@ router.post(
   validate(initiateFileUploadSchema),
   throttleRequest("WRITE"),
   initiateFileUpload,
+);
+router.delete(
+  "/cancel/:fileId",
+  uploadLimiter,
+  throttleRequest("WRITE"),
+  cancelFileUpload,
 );
 router.post(
   "/complete/:fileId",

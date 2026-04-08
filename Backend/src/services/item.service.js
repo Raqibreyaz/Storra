@@ -1,4 +1,4 @@
-import { deleteObject } from "./aws.service.js";
+import { deleteObjects } from "./aws.service.js";
 import mongoose from "mongoose";
 import Directory from "../models/directory.model.js";
 import File from "../models/file.model.js";
@@ -63,7 +63,7 @@ export const bulkDeleteItemsService = async (selectedDirs, selectedFiles) => {
   }
 
   // S3 cleanup AFTER commit (orphan files are harmless)
-  for (const { objectKey } of fileInfos) {
-    await deleteObject(objectKey).catch(() => {});
-  }
+  await deleteObjects(fileInfos.map((file) => ({ Key: file.objectKey }))).catch(
+    () => {},
+  );
 };

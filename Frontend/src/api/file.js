@@ -50,8 +50,15 @@ export function uploadFile(dirId, file, { onProgress, onLoad, onError } = {}) {
       xhr.open("PUT", signedUrl);
       xhr.setRequestHeader("Content-Type", file.type);
 
+      const informUploadInterrupt = async () => {
+        await client.delete(`/file/cancel/${fileId}`);
+      };
+
       // Wire up abort
-      const onAbort = () => xhr.abort();
+      const onAbort = () => {
+        xhr.abort();
+      };
+
       controller.signal.addEventListener("abort", onAbort);
 
       await new Promise((resolve, reject) => {
@@ -64,9 +71,14 @@ export function uploadFile(dirId, file, { onProgress, onLoad, onError } = {}) {
           if (xhr.status >= 200 && xhr.status < 300) resolve();
           else reject(new Error(`S3 upload failed (${xhr.status})`));
         };
-        xhr.onerror = () => reject(new Error("Network error during upload"));
-        xhr.onabort = () =>
+        xhr.onerror = async () => {
+          await informUploadInterrupt();
+          reject(new Error("Network error during upload"));
+        };
+        xhr.onabort = async () => {
+          await informUploadInterrupt();
           reject(new DOMException("Upload cancelled", "AbortError"));
+        };
         xhr.send(file);
       });
 

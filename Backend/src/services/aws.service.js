@@ -5,6 +5,7 @@ import {
   DeleteObjectCommand,
   CopyObjectCommand,
   GetObjectCommand,
+  DeleteObjectsCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import path from "node:path";
@@ -55,6 +56,19 @@ export const deleteObject = async (objectKey) => {
   const command = new DeleteObjectCommand({
     Bucket: bucketName,
     Key: objectKey,
+  });
+
+  const {
+    $metadata: { httpStatusCode },
+  } = await s3Client.send(command);
+  return httpStatusCode < 300 && httpStatusCode >= 200;
+};
+
+// delete the given objects
+export const deleteObjects = async (objectKeys) => {
+  const command = new DeleteObjectsCommand({
+    Bucket: bucketName,
+    Delete: { Objects: objectKeys, Quiet: true },
   });
 
   const {

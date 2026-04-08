@@ -1,7 +1,5 @@
-import path from "node:path";
 import Directory from "../models/directory.model.js";
 import File from "../models/file.model.js";
-import appRootPath from "app-root-path";
 
 export default async function getDescendantFileAndDirIds(
   currDirId,
@@ -26,11 +24,7 @@ export default async function getDescendantFileAndDirIds(
 
   // removing all the files from storage
   for (const { _id: fileId, extname } of files) {
-    const filePath = path.join(
-      appRootPath.path,
-      "storage",
-      fileId.toString() + extname,
-    );
-    fileInfos.push({ fileId, filePath });
+    const objectKey = fileId.toString() + extname ?? "";
+    fileInfos.push({ fileId, objectKey });
   }
 }

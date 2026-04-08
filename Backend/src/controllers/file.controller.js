@@ -104,11 +104,13 @@ export const initiateFileUpload = async (req, res, next) => {
     );
 
   // check if a file with that name already exists in that directory
-  const fileAlreadyExist = !!(await File.exists({
+  const file = await File.exists({
     parentDir: parentDir._id,
     name: fileName,
-  }).lean());
-  if (fileAlreadyExist) {
+  }).lean();
+
+  // when file already exists and uploaded completely then skip
+  if (file && !file.isUploading) {
     throw new ApiError(
       400,
       "A file with this name already exist in this directory",
@@ -116,37 +118,46 @@ export const initiateFileUpload = async (req, res, next) => {
     );
   }
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try {
+  // create the file if not already exists
+  if (!file) {
     // add entry in File
-    await File.insertOne(
-      {
-        _id: fileId,
-        name: fileName,
-        size: fileSize,
-        parentDir: parentDir._id,
-        extname: fileExt,
-        isUploading: true,
-        user: userId,
-      },
-      { session },
-    );
-    const signedUrl = await createObjectPresignedUrl(
-      fileId + fileExt,
-      fileSize,
-      fileType,
-    );
-
-    await session.commitTransaction();
-    res
-      .status(201)
-      .json({ message: "Got the File Metadata!", fileId, signedUrl });
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
+    await File.insertOne({
+      _id: fileId,
+      name: fileName,
+      size: fileSize,
+      parentDir: parentDir._id,
+      extname: fileExt,
+      isUploading: true,
+      user: userId,
+    });
   }
+
+  // create a new presigned url of the file
+  const signedUrl = await createObjectPresignedUrl(
+    fileId + fileExt,
+    fileSize,
+    fileType,
+  );
+
+  res
+    .status(201)
+    .json({ message: "Got the File Metadata!", fileId, signedUrl });
+};
+
+export const cancelFileUpload = async (req, res, next) => {
+  const userId = req.targetUserId || req.session.user._id.toString();
+  const fileId = req.params.fileId;
+
+  const file = await File.findOne({ _id: fileId, user: userId });
+
+  // file must exist and not been uploaded
+  if (!file) throw new ApiError(404, "File not found!");
+  if (!file.isUploading) throw new ApiError(400, "File was already uploaded!");
+
+  // finally delete the file as it was cancelled
+  await File.deleteOne({ _id: file._id });
+
+  res.status(201).json({ message: "File Cancelled Successfully!" });
 };
 
 export const completeFileUpload = async (req, res, next) => {
