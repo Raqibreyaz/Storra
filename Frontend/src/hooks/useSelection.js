@@ -8,6 +8,15 @@ export default function useSelection(items, dirId) {
     setSelectedItems({ dirs: [], files: [] });
   }, [dirId]);
 
+  // Single click: exclusive select (replaces current selection)
+  const selectItem = useCallback((id, isDirectory) => {
+    setSelectedItems({
+      dirs: isDirectory ? [id] : [],
+      files: isDirectory ? [] : [id],
+    });
+  }, []);
+
+  // Ctrl+Click: toggle item in/out of current selection
   const toggleSelect = useCallback((id, isDirectory) => {
     setSelectedItems((prev) => {
       const key = isDirectory ? "dirs" : "files";
@@ -19,6 +28,15 @@ export default function useSelection(items, dirId) {
       }
     });
   }, []);
+
+  // Handle click with modifier key detection
+  const handleItemClick = useCallback((id, isDirectory, ctrlKey) => {
+    if (ctrlKey) {
+      toggleSelect(id, isDirectory);
+    } else {
+      selectItem(id, isDirectory);
+    }
+  }, [toggleSelect, selectItem]);
 
   const toggleSelectAll = useCallback(() => {
     const totalSelected = selectedItems.dirs.length + selectedItems.files.length;
@@ -43,7 +61,7 @@ export default function useSelection(items, dirId) {
   return {
     selectedItems,
     selectedCount,
-    toggleSelect,
+    handleItemClick,
     toggleSelectAll,
     clearSelection,
   };

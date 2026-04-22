@@ -10,9 +10,11 @@ import {
   FaSignOutAlt,
   FaSignInAlt,
   FaChevronRight,
+  FaCrown,
 } from "react-icons/fa";
 import ProfileImage from "./ProfileImage";
 import { sanitizeText } from "../utils/sanitize.js";
+import formatSize from "../utils/formatSize.js";
 import { getCurrentUser, logoutSelf, logoutAllDevices } from "../api/user.js";
 
 function DirectoryHeader({
@@ -43,9 +45,6 @@ function DirectoryHeader({
   const picture = userData?.picture || null;
   const maxStorageInBytes = userData?.maxStorageInBytes || 1073741824;
   const usedStorageInBytes = userData?.usedStorageInBytes || 0;
-
-  const usedGB = usedStorageInBytes / 1024 ** 3;
-  const totalGB = maxStorageInBytes / 1024 ** 3;
 
   const logoutMutation = useMutation({
     mutationFn: logoutSelf,
@@ -146,15 +145,28 @@ function DirectoryHeader({
                       <div className="w-40 h-1 bg-gray-300 rounded-full overflow-hidden mb-1">
                         <div
                           className="bg-blue-500 rounded-full h-full"
-                          style={{ width: `${(usedGB / totalGB) * 100}%` }}
+                          style={{ width: `${(usedStorageInBytes / maxStorageInBytes) * 100}%` }}
                         ></div>
                       </div>
-                      <div className="text-xs">
-                        {usedGB.toFixed(2)} GB of {totalGB} GB used
+                      <div className="text-xs flex justify-between items-center pr-2">
+                        <span>{formatSize(usedStorageInBytes)} of {formatSize(maxStorageInBytes)} used</span>
+                        <span
+                          className="text-blue-600 font-semibold cursor-pointer hover:underline ml-2"
+                          onClick={() => { navigate("/plans"); setShowUserMenu(false); }}
+                        >
+                          Upgrade
+                        </span>
                       </div>
                     </div>
                   </div>
                   <div className="border-t border-gray-200" />
+                  <div
+                    className="flex overflow-hidden gap-1 px-4 py-2 cursor-pointer text-gray-700 text-[0.95rem] whitespace-nowrap hover:bg-gray-100"
+                    onClick={() => { navigate("/plans"); setShowUserMenu(false); }}
+                  >
+                    <FaCrown className="text-base text-yellow-500" />
+                    <span>Upgrade Plan</span>
+                  </div>
                   <div
                     className="flex overflow-hidden gap-1 px-4 py-2 cursor-pointer text-gray-700 text-[0.95rem] whitespace-nowrap hover:bg-gray-100"
                     onClick={() => { navigate("/shared"); setShowUserMenu(false); }}
@@ -189,6 +201,13 @@ function DirectoryHeader({
                   >
                     <FaSignInAlt className="text-base text-blue-600" />
                     <span>Login</span>
+                  </div>
+                  <div
+                    className="flex overflow-hidden gap-1 px-4 py-2 cursor-pointer text-gray-700 text-[0.95rem] whitespace-nowrap hover:bg-gray-100"
+                    onClick={() => { navigate("/plans"); setShowUserMenu(false); }}
+                  >
+                    <FaCrown className="text-base text-yellow-500" />
+                    <span>View Plans</span>
                   </div>
                 </>
               )}

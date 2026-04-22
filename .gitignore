@@ -27,3 +27,5 @@ storage
 *logs.txt
 .env
 *.resolved
+*.pem
+razorpay-integration-upload-design-doc.md

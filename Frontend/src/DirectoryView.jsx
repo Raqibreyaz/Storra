@@ -8,12 +8,11 @@ import AccessControlModal from "./components/AccessControlModal";
 import DetailsModal from "./components/DetailsModal";
 import DirectoryList from "./components/DirectoryList";
 import FloatingActionBar from "./components/FloatingActionBar";
-import SelectAllControl from "./components/common/SelectAllControl";
 import { getDirectory, createDirectory, deleteDirectory, renameDirectory } from "./api/directory.js";
 import { deleteFile, renameFile, getFileUrl } from "./api/file.js";
 import { bulkDeleteItems } from "./api/item.js";
 import { sanitizeText } from "./utils/sanitize.js";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import useModals from "./hooks/useModals";
 import useSelection from "./hooks/useSelection";
 import useContextMenu from "./hooks/useContextMenu";
@@ -60,7 +59,7 @@ function DirectoryView() {
   ], [uploadingFile, directoryData]);
 
   const {
-    selectedItems, selectedCount, toggleSelect, toggleSelectAll, clearSelection
+    selectedItems, selectedCount, handleItemClick, toggleSelectAll, clearSelection
   } = useSelection(combinedItems, dirId);
 
   const {
@@ -113,10 +112,33 @@ function DirectoryView() {
   });
 
   // Handlers
-  const handleRowClick = (type, id) => {
+  const handleOpenItem = useCallback((type, id) => {
     if (type === "directory") navigate(`/directory/${id}`);
     else window.location.href = getFileUrl(id);
-  };
+  }, [navigate]);
+
+  // Keyboard shortcuts: Ctrl+A to select all, Escape to clear selection
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+        e.preventDefault();
+        toggleSelectAll();
+      }
+      if (e.key === "Escape") {
+        clearSelection();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [toggleSelectAll, clearSelection]);
+
+  // Click on empty area to deselect
+  const handleContainerClick = useCallback((e) => {
+    if (e.target === e.currentTarget) {
+      clearSelection();
+    }
+  }, [clearSelection]);
 
   const handleDeleteItem = (type, id, name) => {
     if (confirm(`Delete this ${type === "file" ? "File" : "Directory"}: ${name}?`)) {
@@ -156,16 +178,10 @@ function DirectoryView() {
   const directoryPath = dirId && directoryData?.path ? directoryData.path : [];
 
   return (
-    <div className="px-2.5 max-w-[1000px] mx-auto">
+    <div className="px-2.5 max-w-[1000px] mx-auto min-h-screen" onClick={handleContainerClick}>
       {errorMessage && !dirNotFound && (
         <div className="text-red-500 mb-2">{errorMessage}</div>
       )}
-
-      <SelectAllControl
-        itemsCount={combinedItems.length}
-        selectedCount={selectedCount}
-        onToggleSelectAll={toggleSelectAll}
-      />
 
       <DirectoryHeader
         directoryName={directoryName}
@@ -237,7 +253,8 @@ function DirectoryView() {
       ) : (
         <DirectoryList
           items={combinedItems}
-          handleRowClick={handleRowClick}
+          onItemClick={handleItemClick}
+          onItemDoubleClick={handleOpenItem}
           activeContextMenu={activeContextMenu}
           contextMenuPos={contextMenuPos}
           handleContextMenu={handleContextMenu}
@@ -251,14 +268,15 @@ function DirectoryView() {
           onShare={openShare}
           onManageAccess={openAccess}
           selectedItems={selectedItems}
-          handleToggleSelect={toggleSelect}
         />
       )}
 
       <FloatingActionBar
         selectedCount={selectedCount}
+        totalCount={combinedItems.length}
         onClear={clearSelection}
         onDelete={handleBulkDelete}
+        onSelectAll={toggleSelectAll}
       />
     </div>
   );

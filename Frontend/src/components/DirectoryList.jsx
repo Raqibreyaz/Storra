@@ -2,7 +2,8 @@ import DirectoryItem from "./DirectoryItem";
 
 function DirectoryList({
   items,
-  handleRowClick,
+  onItemClick,
+  onItemDoubleClick,
   activeContextMenu,
   contextMenuPos,
   handleContextMenu,
@@ -16,7 +17,6 @@ function DirectoryList({
   onShare,
   onManageAccess,
   selectedItems,
-  handleToggleSelect,
 }) {
   return (
     <div className="flex flex-col gap-2.5 mt-5">
@@ -29,7 +29,8 @@ function DirectoryList({
           <DirectoryItem
             key={item._id}
             item={item}
-            handleRowClick={handleRowClick}
+            onItemClick={onItemClick}
+            onItemDoubleClick={onItemDoubleClick}
             activeContextMenu={activeContextMenu}
             contextMenuPos={contextMenuPos}
             handleContextMenu={handleContextMenu}
@@ -43,7 +44,6 @@ function DirectoryList({
             onShare={onShare}
             onManageAccess={onManageAccess}
             isSelected={isSelected}
-            onToggleSelect={() => handleToggleSelect(item._id, item.isDirectory)}
           />
         );
       })}

@@ -1,7 +1,9 @@
-import { Trash2, X } from "lucide-react";
+import { Trash2, X, CheckCheck } from "lucide-react";
 
-function FloatingActionBar({ selectedCount, onClear, onDelete }) {
+function FloatingActionBar({ selectedCount, totalCount, onClear, onDelete, onSelectAll }) {
   if (selectedCount === 0) return null;
+
+  const allSelected = selectedCount === totalCount && totalCount > 0;
 
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -12,6 +14,19 @@ function FloatingActionBar({ selectedCount, onClear, onDelete }) {
           </span>
           <span className="text-sm font-medium whitespace-nowrap">Items selected</span>
         </div>
+
+        <button
+          onClick={onSelectAll}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all group ${
+            allSelected
+              ? "text-blue-300 hover:bg-blue-500/20 hover:text-blue-200"
+              : "text-gray-300 hover:bg-gray-700 hover:text-white"
+          }`}
+          title={allSelected ? "Deselect All" : "Select All"}
+        >
+          <CheckCheck size={18} className="group-hover:scale-110 transition-transform" />
+          <span className="text-sm font-semibold">{allSelected ? "Deselect All" : "Select All"}</span>
+        </button>
 
         <button
           onClick={onDelete}

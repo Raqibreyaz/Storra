@@ -61,6 +61,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 1 * 1024 ** 3, //1GB
     },
+    subscriptionId: {
+      type: String,
+      default: null,
+    },
     isDeleted: {
       type: Boolean,
       default: false,

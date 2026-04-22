@@ -25,10 +25,7 @@ const presignedUrlExpiry = parseInt(
 const cloudFrontId = process.env.AWS_CLOUDFRONT_ID;
 const cloudFrontUrl = process.env.AWS_CLOUDFRONT_URL;
 const cloudFrontKeyPairId = process.env.AWS_CLOUDFRONT_KEY_PAIR_ID;
-const cloudFrontPrivateKey = Buffer.from(
-  process.env.AWS_CLOUDFRONT_PRIVATE_KEY,
-  "base64",
-).toString("utf-8");
+const cloudFrontPrivateKey = process.env.AWS_CLOUDFRONT_PRIVATE_KEY;
 
 const s3Client = new S3Client({
   credentials: { accessKeyId, secretAccessKey },
@@ -179,6 +176,5 @@ export const getObjectPresignedUrl = async (
     ).toISOString(),
   });
 
-  console.log(signedUrl);
   return signedUrl;
 };

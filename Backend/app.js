@@ -8,6 +8,8 @@ import userRoutes from "./src/routes/user.route.js";
 import authRoutes from "./src/routes/auth.route.js";
 import fileShareRoutes from "./src/routes/fileShare.route.js";
 import itemRoutes from "./src/routes/item.route.js";
+import subscriptionRoutes from "./src/routes/subscription.route.js";
+import planRoutes from "./src/routes/plan.route.js";
 import checkAuthentication from "./src/middlewares/authenticate.middleware.js";
 import { globalErrorHandler } from "./src/middlewares/errorHandler.middleware.js";
 
@@ -35,6 +37,8 @@ app.use("/file", checkAuthentication, fileRoutes);
 app.use("/share", checkAuthentication, fileShareRoutes);
 app.use("/user", checkAuthentication, userRoutes);
 app.use("/item", checkAuthentication, itemRoutes);
+app.use("/subscriptions", subscriptionRoutes);
+app.use("/plans", planRoutes);
 app.use("/auth", authRoutes);
 
 // global error handler — consistent { error, errorCode } response
