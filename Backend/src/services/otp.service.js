@@ -3,12 +3,13 @@ import crypto from "crypto";
 import OTP from "../models/otp.model.js";
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: 587,
-  secure: false, // Use true for port 465, false for port 587
+  service: "gmail",
   auth: {
+    type: "OAuth2",
     user: process.env.NODEMAILER_EMAIL,
-    pass: process.env.NODEMAILER_PASS,
+    refreshToken: process.env.NODEMAILER_REFRESH_TOKEN,
+    clientId: process.env.NODEMAILER_CLIENT_ID,
+    clientSecret: process.env.NODEMAILER_CLIENT_SECRET,
   },
 });
 
@@ -38,6 +39,7 @@ export default async function sendOtpService(email) {
     to: email,
     subject: "Storage App OTP",
     html,
+    attachments,
   });
   console.log(info.messageId);
 

@@ -1,10 +1,12 @@
-- make the subscription creation and user updation atomic
 - show subscribed plan as marked
 - upgrading/downgrading plan
 - handle all necessary subscription events
 - should i store razorpay events in DB?
+- fix downloading and filenaming problem
+- make the subscription creation and user updation atomic
+- check for atomic Ops requirement wherever possible
+- ErrorCode fixing in Error Responses
 
-- use OAuth2.0 for gmail nodemailer
 - import from google drive
 - directory sharing functionality with the help of path property
 - Bulk Download
@@ -31,3 +33,4 @@ DONE:
 - increasing user's maxStorageBytes on subscription
 - double click to view directory or file
 - single click to select and ctrl + single-click to select multiple
+- use OAuth2.0 for gmail nodemailer
