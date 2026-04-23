@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -150,6 +150,11 @@ function PlanCard({ plan, isYearly, isPopular }) {
         mutationFn: createSubscription,
     });
     const onSubscribe = async () => {
+        if (!window.Razorpay) {
+            alert("Razorpay SDK is still loading. Please try again in a moment.");
+            return;
+        }
+
         const {
             apiKey, subscriptionId, businessName, theme, prefill, notes
         } =
@@ -162,16 +167,16 @@ function PlanCard({ plan, isYearly, isPopular }) {
             // "description": "",
             // "image": "/your_logo.jpg",
             "handler": function (response) {
-                consosle.log(response.razorpay_payment_id),
-                    consosle.log(response.razorpay_subscription_id),
-                    consosle.log(response.razorpay_signature);
+                console.log(response.razorpay_payment_id),
+                    console.log(response.razorpay_subscription_id),
+                    console.log(response.razorpay_signature);
             },
             "prefill": prefill,
             "notes": notes,
             "theme": theme
         }
 
-        const rzp = new Razorpay(options)
+        const rzp = new window.Razorpay(options)
         rzp.open()
     }
 
@@ -269,6 +274,18 @@ const Plans = () => {
     });
 
     const plans = plansData?.plans ?? [];
+
+    useEffect(() => {
+        let script = document.querySelector("#checkout-script")
+
+        if (!script) {
+            script = document.createElement('script')
+            script.id = "checkout-script"
+            script.src = "https://checkout.razorpay.com/v1/checkout.js"
+            script.async = true
+            document.body.appendChild(script)
+        }
+    }, [])
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
