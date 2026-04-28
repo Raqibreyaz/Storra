@@ -26,6 +26,7 @@ storage
 *DB.json
 logs.txt
 .env
+.env copy
 *.resolved
 *.pem
 Events-Flow.md
