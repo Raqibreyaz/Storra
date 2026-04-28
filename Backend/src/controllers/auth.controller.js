@@ -259,7 +259,7 @@ export const sendOtp = async (req, res, next) => {
 
 export const githubAuth = async (req, res, next) => {
   const client_id = process.env.GITHUB_CLIENT_ID;
-  const redirect_uri = process.env.GITHUB_REDIRECT_URI;
+  // const redirect_uri = process.env.GITHUB_REDIRECT_URI;
   const github_scope = process.env.GITHUB_SCOPE;
   const state = crypto.randomBytes(32).toString("hex");
 
@@ -277,7 +277,7 @@ export const githubAuth = async (req, res, next) => {
 
   const params = new URLSearchParams({
     client_id,
-    redirect_uri,
+    // redirect_uri,
     scope: github_scope,
     state,
   });
