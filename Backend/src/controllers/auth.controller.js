@@ -267,12 +267,10 @@ export const githubAuth = async (req, res, next) => {
 
   // Store state in signed cookie (or Redis)
   res.cookie("oauth_state", state, {
-    // domain,
     httpOnly: true,
-    // sameSite: "strict",
     sameSite: "none",
     signed: true,
-    secure:true
+    secure: true,
   });
 
   const params = new URLSearchParams({

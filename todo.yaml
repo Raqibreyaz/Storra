@@ -1,14 +1,30 @@
 TODO:
-  - due to cross site requests, vulnerable to CSRF attack
-  - otp input goes hidden on page refresh, login and signup page
-  - adding landing page
-  - adding invoices feature in the dashboard
-  - import from google drive
-  - directory sharing functionality with the help of path property
-  - Bulk Download
-  - Download as zip for both files and directories
-  - sort by name,date,size etc.
-  - filter
+  ISSUES:
+    - otp input goes hidden on page refresh, login and signup page
+    - nodemailer failed to refresh token, need to publish app to production maybe
+    - github logged in, but cookie didnt get saved, while google and local login works
+    - razorpay plan updation failing with
+      {
+        statusCode: 400,
+        error: {
+          code: 'BAD_REQUEST_ERROR',
+          description: "Can't update subscription immediately when card mandate is applicable"
+        }
+      }
+    - dangerous site error occuring on previewing a file
+  
+  FEATURE_REQUEST:
+    - adding landing page
+    - adding invoices feature in the dashboard
+    - import from google drive
+    - directory sharing functionality with the help of path property
+    - Bulk Download
+    - Download as zip for both files and directories
+    - sort by name,date,size etc.
+    - filter
+  
+  - deploy the frontend to netlify or any reliable place -> skip deploying to aws(s3 + cloudfornt) for now
+  - cloudfront's filenaming and downloading problem -> remove cloudfront for now
 
 LATER:
   - handling razorpay specific errors in error middleware
@@ -21,4 +37,3 @@ LATER:
   - handle case where user has paused subscription from too long
 
 DONE:
-  - instead of cache invalidation of cloudfront, use other mechanism for better practice -> removed invalidation logic completely

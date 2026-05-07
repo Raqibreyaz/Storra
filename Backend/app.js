@@ -14,6 +14,7 @@ import checkAuthentication from "./src/middlewares/authenticate.middleware.js";
 import { globalErrorHandler } from "./src/middlewares/errorHandler.middleware.js";
 
 import "./src/services/taskScheduler.service.js";
+import preventCsrf from "./src/middlewares/preventCsrf.middleware.js";
 
 const app = express();
 
@@ -29,8 +30,11 @@ app.use(
   cors({
     origin: [process.env.FRONTEND_URI],
     credentials: true,
+    allowedHeaders: ["Content-Type", "X-CSRF-Token" ],
   }),
 );
+
+app.use(preventCsrf) //preventing CSRF, helpful when cors by-passed
 app.use(cookieParser(process.env.COOKIE_PARSER_KEY));
 app.use(express.json());
 

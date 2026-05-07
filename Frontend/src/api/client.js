@@ -18,7 +18,7 @@ export class ApiError extends Error {
 const client = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
-  headers: { "Content-Type": "application/json" },
+  headers: { "Content-Type": "application/json", "X-CSRF-Token": "1234" },
 });
 
 // ─── Response interceptor ────────────────────────────────────────────────────
@@ -31,7 +31,11 @@ client.interceptors.response.use(
     // Network / timeout errors (no response at all)
     if (!error.response) {
       return Promise.reject(
-        new ApiError("Network error — check your connection", "NETWORK_ERROR", 0),
+        new ApiError(
+          "Network error — check your connection",
+          "NETWORK_ERROR",
+          0,
+        ),
       );
     }
 

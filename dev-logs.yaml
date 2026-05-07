@@ -57,8 +57,8 @@ issues:
   - issue: AppPassword based gmail sign-in is not secure
   - fix: using OAuth2.0, create a project on google cloud console, use it's client id and client secret + create a refresh token by adding redirect URI(https://developers.google.com/oauthplayground) and visiting that site
 
-  - issue: cloudfront serving files event which are already deleted
-  - fix: invalidate the cloudfront cache for that particular deleted object so that up to date cache data should be delivered
+  - issue: cloudfront serving files even which are already deleted
+  - fix: invalidate the cloudfront cache for that particular deleted object so that up to date cache data should be delivered, but this causes unncessary invalidations, so keeping the current behavior as the file is not served at frontend unless explicity requested
 
   - issue: by default all files goes to standard tiering which is expensive, we need to save cost on different usage behavior
   - fix:  used intelligent tiering, which will move the s3 objects to relevant tiers on basis of their usage like read,write etc.
@@ -94,3 +94,6 @@ issues:
 
   - issue: manually giving current_start,current_end is buggy and not exact time
   - fix: so used webhook's provided current_start,current_end to show current plan's billing cycle starting and ending
+
+  - issue: due to cross site request(different frontend and backend domain) so it is vulnerable to csrf
+  - fix: since forms by passes the cors validation for simple requests, added a middleware check to get a custom header, so added a custom header check, and requests having custom header will always first trigger preflight-request

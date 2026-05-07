@@ -31,8 +31,13 @@ const GithubLoginButton = ({
     if (!listenerAttached.current) {
       listenerAttached.current = true;
       const onMessage = (event) => {
+        console.log("received data:");
+        console.log(event.origin);
         if (event.origin !== FRONTEND_URI) return;
-        if (event.data?.message === "success") navigate("/");
+        if (event.data?.message === "success") {
+          console.log("navigating to home page");
+          navigate("/");
+        }
         setLoading(false);
         window.removeEventListener("message", onMessage);
         listenerAttached.current = false;
@@ -50,7 +55,9 @@ const GithubLoginButton = ({
     >
       <Github size={18} className="shrink-0" />
       {loading ? (
-        <span className="opacity-80 animate-[pulse-opacity_1s_infinite_ease-in-out]">Redirecting...</span>
+        <span className="opacity-80 animate-[pulse-opacity_1s_infinite_ease-in-out]">
+          Redirecting...
+        </span>
       ) : (
         <span>{children}</span>
       )}
