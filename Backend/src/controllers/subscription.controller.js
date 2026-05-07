@@ -36,6 +36,9 @@ export const createSubscription = async (req, res) => {
       (!fetchedSubscription.cancelAtPeriodEnd ||
         fetchedSubscription.graceEndsAt <= new Date()));
 
+  const isAwaitingActivation =
+    fetchedSubscription && fetchedSubscription.status === "awaiting_activation";
+
   // TODO: Make these both Ops atomic
   if (createNewSubscription) {
     const razorpaySubscription = await rzp.subscriptions.create({
@@ -65,9 +68,9 @@ export const createSubscription = async (req, res) => {
     );
 
     razorpaySubscriptionId = razorpaySubscription.id;
-  } else {
-    throw new ApiError(400, "you are already subscribed!");
-  }
+  } else if (isAwaitingActivation) {
+    razorpaySubscriptionId = fetchedSubscription.razorpaySubscriptionId;
+  } else throw new ApiError(400, "you are already subscribed!");
 
   res.json({
     apiKey: process.env.RZP_KEY_ID,
@@ -123,7 +126,7 @@ export const getSubscription = async (req, res) => {
     storageQuotaBytes: plan.storageQuotaBytes,
     paymentMethod: subscription.paymentMethod,
     graceEndsAt: subscription.graceEndsAt,
-    priceInPaise: plan.priceInPaise
+    priceInPaise: plan.priceInPaise,
   };
 
   res.json({
@@ -248,14 +251,19 @@ export const razorpayWebhook = async (req, res) => {
     : null;
 
   const plan = getPlanByRazorpayPlanId(planId);
+  const storedSubscription = await Subscription.findOne({
+    razorpaySubscriptionId,
+  }).lean();
+
+  // skip if the subscription doesn't exist
+  if (!storedSubscription) return res.sendStatus(200);
+
   const {
     user: userId,
     _id: storedSubscriptionId,
     currentPeriodEnd: storedSubscriptionPeriodEnd,
     planId: storedPlanId,
-  } = await Subscription.findOne({
-    razorpaySubscriptionId,
-  }).lean();
+  } = storedSubscription;
 
   await WebhookEvent.insertOne({
     eventId,

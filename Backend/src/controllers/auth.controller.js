@@ -270,7 +270,7 @@ export const githubAuth = async (req, res, next) => {
     httpOnly: true,
     sameSite: "none",
     signed: true,
-    secure: true,
+    secure: process.env.NODE_ENV !== 'DEVELOPMENT',
   });
 
   const params = new URLSearchParams({

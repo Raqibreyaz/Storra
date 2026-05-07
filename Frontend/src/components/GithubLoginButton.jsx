@@ -49,7 +49,7 @@ const GithubLoginButton = ({
   return (
     <button
       type="button"
-      className="w-full flex items-center justify-center gap-2 py-2.5 px-2 border border-gray-300 rounded-[0.3rem] bg-white text-gray-800 text-sm font-semibold cursor-pointer shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] focus:outline-none focus-visible:border-gray-800 focus-visible:ring-2 focus-visible:ring-gray-800/25 disabled:opacity-60 disabled:cursor-not-allowed"
+      className="h-[40px] flex items-center justify-center gap-2 px-3 border border-gray-300 rounded bg-white text-gray-800 text-sm font-semibold cursor-pointer shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] focus:outline-none focus-visible:border-gray-800 focus-visible:ring-2 focus-visible:ring-gray-800/25 disabled:opacity-60 disabled:cursor-not-allowed"
       onClick={handleGithubLogin}
       disabled={disabled || loading}
     >
@@ -59,7 +59,7 @@ const GithubLoginButton = ({
           Redirecting...
         </span>
       ) : (
-        <span>{children}</span>
+        <span className="whitespace-nowrap">{children}</span>
       )}
     </button>
   );

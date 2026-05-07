@@ -7,7 +7,7 @@ export default function createCookie(res, sessionId) {
     signed: true,
     sameSite: "none",
     maxAge: expiryAgeInSec * 1000,
-    secure: true,
+    secure: process.env.NODE_ENV !== 'DEVELOPMENT',
   });
   console.log("cookie assigned to user:");
 }

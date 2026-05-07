@@ -15,11 +15,11 @@ const preventCsrf = (req, res, next) => {
 //   }
 
   const csrfHeader = req.get("X-CSRF-Token");
-  if (!csrfHeader) {
-    throw new ApiError(400, "Simple requests not allowed");
+  if (csrfHeader || req.url.includes('/subscriptions/events')) {
+    return next();
   }
-
-  return next();
+  
+  throw new ApiError(400, "Simple requests not allowed");
 };
 
 export default preventCsrf;

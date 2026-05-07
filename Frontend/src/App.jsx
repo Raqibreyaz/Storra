@@ -10,11 +10,12 @@ import SharedWithMePage from "./SharedWithMePage";
 import UpdatePassword from "./UpdatePassword";
 import Plans from "./Plans";
 import Dashboard from "./Dashboard";
+import LandingPage from "./LandingPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <DirectoryView />,
+    element: <LandingPage />,
   },
   {
     path: "/register",
@@ -23,18 +24,6 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
-  },
-  {
-    path: "/directory/:dirId",
-    element: <DirectoryView />,
-  },
-  {
-    path: "/users",
-    element: <UsersPage />,
-  },
-  {
-    path: "/shared",
-    element: <SharedWithMePage />,
   },
   {
     path: "/callback",
@@ -49,7 +38,23 @@ const router = createBrowserRouter([
     element: <Plans />,
   },
   {
-    path: "/dashboard",
+    path: "/app",
+    element: <DirectoryView />,
+  },
+  {
+    path: "/app/directory/:dirId",
+    element: <DirectoryView />,
+  },
+  {
+    path: "/app/users",
+    element: <UsersPage />,
+  },
+  {
+    path: "/app/shared",
+    element: <SharedWithMePage />,
+  },
+  {
+    path: "/app/dashboard",
     element: <Dashboard />,
   },
 ]);

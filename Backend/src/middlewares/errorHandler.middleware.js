@@ -67,6 +67,13 @@ export function globalErrorHandler(err, req, res, next) {
     });
   }
 
+  if (err.error) {
+    return res.status(400).json({
+      errorCode: err.error.code,
+      error: err.error.description,
+    });
+  }
+
   // ── Known operational error (ApiError) ────────────────────────────────
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json({

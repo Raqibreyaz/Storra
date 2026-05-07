@@ -97,3 +97,6 @@ issues:
 
   - issue: due to cross site request(different frontend and backend domain) so it is vulnerable to csrf
   - fix: since forms by passes the cors validation for simple requests, added a middleware check to get a custom header, so added a custom header check, and requests having custom header will always first trigger preflight-request
+
+  - issue: otp input goes hidden on page refresh, login and signup page
+  - fix: made the otp input to be available all the time + made otp only input also so if user refreshes page in between he doesnt have to input all fields again

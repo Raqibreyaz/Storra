@@ -150,10 +150,10 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
     const savingsPercent = getYearlySavings(plan);
 
     const currentPlanKey = currentSubscription?.planKey;
-    
+
     const isGraceExpired = currentSubscription?.graceEndsAt && new Date(currentSubscription.graceEndsAt) <= new Date();
-    const isEffectivelyFree = 
-        !currentSubscription?.status || 
+    const isEffectivelyFree =
+        !currentSubscription?.status ||
         (currentSubscription.status === "cancelled" && (!currentSubscription.cancelAtPeriodEnd || isGraceExpired));
 
     const isCurrentPlan = currentPlanKey && activeVariant?.planKey === currentPlanKey && !isEffectivelyFree;
@@ -396,8 +396,8 @@ const Plans = () => {
     const currentSubscription = subscriptionData?.subscription ?? null;
 
     const isGraceExpired = currentSubscription?.graceEndsAt && new Date(currentSubscription.graceEndsAt) <= new Date();
-    const isEffectivelyFree = 
-        !currentSubscription?.status || 
+    const isEffectivelyFree =
+        !currentSubscription?.status ||
         (currentSubscription.status === "cancelled" && (!currentSubscription.cancelAtPeriodEnd || isGraceExpired));
 
     const handlePostPayment = () => {
@@ -476,7 +476,9 @@ const Plans = () => {
                 {/* Card payment tip */}
                 <p className="mt-4 text-xs text-gray-400 flex items-center justify-center gap-1.5">
                     <FaCreditCard className="text-gray-400" />
-                    Pay with a card to enable plan upgrades/downgrades later.
+                    <span className="text-green-400 text-sm">
+                        Pay with a card to enable plan upgrades/downgrades later.
+                    </span>
                 </p>
             </section>
 
