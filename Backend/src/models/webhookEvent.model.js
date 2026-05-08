@@ -28,8 +28,8 @@ const webhookEventSchema = new mongoose.Schema({
   },
   processingStatus: {
     type: String,
-    enum: ["pending", "processed", "failed"],
-    default: "pending",
+    enum: ["processing", "processed", "failed"],
+    default: "processing",
   },
   rawPayload: {
     type: mongoose.Schema.Types.Mixed,

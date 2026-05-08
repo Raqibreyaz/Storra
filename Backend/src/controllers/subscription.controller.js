@@ -294,7 +294,7 @@ export const razorpayWebhook = async (req, res) => {
             razorpaySubscriptionId,
             receivedAt: new Date(),
             provider: "razorpay",
-            processingStatus: "pending",
+            processingStatus: "processing",
           },
         },
         { upsert: true, session },

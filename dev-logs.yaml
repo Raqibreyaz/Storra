@@ -133,3 +133,6 @@ issues:
 
   - issue: handling the razorpay webhook events was not transaction based, which could cause inconsistent state
   - fix: used mongodb transactions to make the steps atomic
+
+  - issue: webhook event having 'pending' status doesnt sound that much good in comparison to 'failed' 'processed'
+  - fix: replaced 'pending' to 'processing' 

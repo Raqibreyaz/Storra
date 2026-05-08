@@ -1,16 +1,17 @@
 TODO:
   ISSUES:
     - what parts in the application is creating unnecessary complexity
+    - adding zod validation to routes where not used
+    - sanitizing input where not performed
+    - rate limitting and throttling correction
     - handle these in error middleware:
       - razorpay specific errors
       - mongodb/mongoose specific errors
       - app specific errors
-    - rate limitting and throttling correction
+    - remove file extension from s3 object completely to maintain atomic updates
     - nodemailer failed to refresh token, need to publish app to production maybe
     - dangerous site error occuring on previewing a file
     - ErrorCode fixing in Error Responses
-    - check for atomic Ops requirement wherever possible
-    - make the subscription creation and user updation atomic
     - github logged in, but cookie didnt get saved, while google and local login works
   
   FEATURE_REQUEST:
@@ -37,9 +38,9 @@ LATER:
   - adding invoices feature in the dashboard
   - directory sharing functionality with the help of path property
   - filter
-  - remove file extension from s3 object completely to maintain atomic updates
 
 DONE:
     - otp input goes hidden on page refresh, login and signup page
     - adding landing page
     - light/dark mode feature
+    - check for atomic Ops requirement wherever possible
