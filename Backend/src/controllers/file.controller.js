@@ -318,21 +318,22 @@ export const deleteFile = async (req, res, next) => {
   if (!file) throw new ApiError(404, "File not found!", FILE_NOT_FOUND);
 
   const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
-    // remove from File
-    await FileShare.deleteMany({ file: file._id }, { session });
-    await File.findByIdAndDelete(file._id, { session });
-    await updateParentSize(file.parentDir, -file.size, session);
-
-    // remove file from storage
-    await deleteObject(fileId + file.extname);
-
-    await session.commitTransaction();
-    res.status(200).json({ message: "File Deleted!" });
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
+    await session.withTransaction(async () => {
+      // remove all fileshare docs where this file shared
+      await FileShare.deleteMany({ file: file._id }, { session });
+      
+      // remove the file
+      await File.findByIdAndDelete(file._id, { session });
+      
+      // updating ancestors size
+      await updateParentSize(file.parentDir, -file.size, session);
+    });
+  } finally {
+    await session.endSession();
   }
+  // remove file from storage now
+  await deleteObject(fileId + file.extname);
+
+  res.status(200).json({ message: "File Deleted!" });
 };

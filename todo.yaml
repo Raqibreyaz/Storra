@@ -1,5 +1,6 @@
 TODO:
   ISSUES:
+    - what parts in the application is creating unnecessary complexity
     - handle these in error middleware:
       - razorpay specific errors
       - mongodb/mongoose specific errors
