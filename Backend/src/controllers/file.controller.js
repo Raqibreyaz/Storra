@@ -216,10 +216,25 @@ export const completeFileUpload = async (req, res, next) => {
     );
   }
 
-  // mark the file as uploaded! & update it's ancestors size
-  file.isUploading = false;
-  await file.save();
-  await updateParentSize(file.parentDir, file.size);
+  // mark the file as uploaded! & update it's ancestors size(atomic!)
+  const session = await mongoose.startSession();
+
+  try {
+    await session.withTransaction(async () => {
+      const updated = await File.updateOne(
+        { _id: fileId, user: userId, isUploading: true },
+        { $set: { isUploading: false } },
+        { session },
+      );
+
+      if (updated.modifiedCount !== 1)
+        throw new ApiError(400, "File was already uploaded!");
+
+      await updateParentSize(file.parentDir, file.size, session);
+    });
+  } finally {
+    await session.endSession();
+  }
 
   res.status(201).json({ message: "File Upload Completed!" });
 };
@@ -231,13 +246,13 @@ export const renameFile = async (req, res, next) => {
   const newFilename = dataSanitizer.sanitize(initialFilename);
   if (!newFilename || newFilename?.length !== initialFilename?.length)
     throw new ApiError(400, "Invalid Filename!");
-  
+
   let file = req.fileDoc;
   if (!file) file = await File.findById(req.params.fileId).lean();
   if (!file) throw new ApiError(404, "File not found!", FILE_NOT_FOUND);
-  
+
   if (file.name === newFilename) throw new ApiError(200, "No change!");
-  
+
   const newExt = path.extname(newFilename);
   const oldExt = file.extname;
 

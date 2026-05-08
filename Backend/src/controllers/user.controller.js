@@ -40,38 +40,42 @@ export const deleteUser = async (req, res, next) => {
 
   // atomically delete directories,files,fileshares and user
   const session = await mongoose.startSession();
-  await session.withTransaction(async () => {
-    await Session.deleteMany({ user: userId }, { session });
+  try {
+    await session.withTransaction(async () => {
+      await Session.deleteMany({ user: userId }, { session });
 
-    // soft delete
-    if (!isPermanent) {
-      await User.updateOne(
-        { _id: userId },
-        { $set: { isDeleted: true } },
-        { session },
-      );
-    }
+      // soft delete
+      if (!isPermanent) {
+        await User.updateOne(
+          { _id: userId },
+          { $set: { isDeleted: true } },
+          { session },
+        );
+      }
 
-    // hard delete
-    else {
-      files = await File.find({ user: userId })
-        .session(session)
-        .select("_id extname")
-        .lean();
-      await Directory.deleteMany({ user: userId }, { session });
-      await FileShare.deleteMany(
-        {
-          file: { $in: files.map((file) => file._id) },
-        },
-        { session },
-      );
-      await FileShare.deleteMany({ user: userId }, { session });
-      await File.deleteMany({ user: userId }, { session });
-      await User.deleteOne({ _id: userId }, { session });
-    }
-  });
+      // hard delete
+      else {
+        files = await File.find({ user: userId })
+          .session(session)
+          .select("_id extname")
+          .lean();
+        await Directory.deleteMany({ user: userId }, { session });
+        await FileShare.deleteMany(
+          {
+            file: { $in: files.map((file) => file._id) },
+          },
+          { session },
+        );
+        await FileShare.deleteMany({ user: userId }, { session });
+        await File.deleteMany({ user: userId }, { session });
+        await User.deleteOne({ _id: userId }, { session });
+      }
+    });
+  } finally {
+    await session.endSession();
+  }
 
-  // deleting from s3 when permanently deleting
+  // deleting from s3, when permanently deleting 'files' will not be null
   if (isPermanent && files) {
     for (const file of files) {
       await deleteObject(String(file._id) + file.extname);

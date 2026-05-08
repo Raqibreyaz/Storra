@@ -111,4 +111,10 @@ issues:
   - fix: although unique root dir name by user email saves us, but this {userId,parentDir,name} will be more good to handle directory duplicacy
 
   - issue: manual handling of transactions by starting,commiting/aborting,ending requires boilerplate and if retry is required then will be nightmare
-  - fix: used session.withTransaction(async ()=>{}), it executes the steps atomically inside the callback, commits and ends the transaction too, and if failed then can even retry it + errors occuring in the callback directly propagates to outer code
+  - fix: used session.withTransaction(async ()=>{}), it executes the steps atomically inside the callback, commits/abort the transaction too, and if failed then can even retry it + errors occuring in the callback directly propagates to outer code
+
+  - issue: file upload is initiated but in-between upload, upload got failed, so now if user retries then there is already an entry of the file for that directory in 'isUploading' status
+  - fix: use that initiated file's existing db entry and return the presigned url only to upload again
+
+  - issue: file upload status and ancestor directories size updation were not atomic so this can be problematic if file status updated but size remained unaltered
+  - fix: used transactions to atomically update the ancestor's size and file status

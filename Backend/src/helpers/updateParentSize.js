@@ -5,20 +5,22 @@ export default async function updateParentSize(
   size,
   session = undefined,
 ) {
-  let volatileParentId = parentId;
-
-  let transaction = {};
-  if (session) transaction.session = session;
-
-  while (volatileParentId && size !== 0) {
-    const volatileParent = await Directory.findByIdAndUpdate(
-      volatileParentId,
-      {
-        $inc: { size },
-      },
-      transaction,
-    ).lean();
-
-    volatileParentId = volatileParent?.parentDir;
+  if (!parentId) {
+    console.log("parent id should not be null!!");
+    return;
   }
+
+  const sessionObj = session ? { session } : {};
+
+  const parentDir = await Directory.findById(parentId, null, sessionObj).lean();
+  if (!parentDir) throw new ApiError(404, "Parent directory not found");
+
+  const path = [...parentDir.path, parentId];
+
+  // increase size of each directory in the path
+  await Directory.updateMany(
+    { _id: { $in: path } },
+    { $inc: { size: size } },
+    sessionObj,
+  );
 }
