@@ -6,7 +6,7 @@ import DirectoryView from "./DirectoryView";
 import Register from "./Register";
 import Login from "./Login";
 import Callback from "./Callback";
-import UsersPage from "./UsersPage";
+import AdminDashboard from "./AdminDashboard";
 import SharedWithMePage from "./SharedWithMePage";
 import UpdatePassword from "./UpdatePassword";
 import Plans from "./Plans";
@@ -47,8 +47,8 @@ const router = createBrowserRouter([
     element: <DirectoryView />,
   },
   {
-    path: "/app/users",
-    element: <UsersPage />,
+    path: "/app/admin",
+    element: <AdminDashboard />,
   },
   {
     path: "/app/shared",

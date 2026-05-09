@@ -187,10 +187,10 @@ function DirectoryHeader({
                   {userRole !== "User" && (
                     <div
                       className="flex overflow-hidden gap-1 px-4 py-2 cursor-pointer text-gray-700 dark:text-gray-300 text-[0.95rem] whitespace-nowrap hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => { navigate("/app/users"); setShowUserMenu(false); }}
+                      onClick={() => { navigate("/app/admin"); setShowUserMenu(false); }}
                     >
                       <FaUsers className="text-base text-blue-600" />
-                      <span>Manage Users</span>
+                      <span>Admin Console</span>
                     </div>
                   )}
                   <div className="border-t border-gray-200 dark:border-gray-700" />

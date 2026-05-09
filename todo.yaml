@@ -1,10 +1,14 @@
 TODO:
   ISSUES:
-    - what parts in the application is creating unnecessary complexity
     - adding some setting at owner dashboard to:
       - disable payment temporarily
       - seeing subscription events 
       - allow only cors allowed origin(s) to make request
+      - etc.
+    - using cron job:
+      - cleanup zombie s3 objects
+      - initiated file entries in DB
+      - created subscriptions
     - nodemailer failed to refresh token, need to publish app to production maybe
     - dangerous site error occuring on previewing a file
     - github logged in, but cookie didnt get saved, while google and local login works
@@ -12,6 +16,7 @@ TODO:
   FEATURE_REQUEST:
     - import from google drive
     - toggling 2FA
+    - any mechanism to get notified by s3 when user has successfully uploaded the file, so we dont need to wait for user to notify us of file upload completion
   
   - deploy the frontend to netlify or any reliable place -> skip deploying to aws(s3 + cloudfornt) for now
   - cloudfront's filenaming and downloading problem -> remove cloudfront for now

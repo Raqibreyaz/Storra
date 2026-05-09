@@ -95,11 +95,17 @@ export const getAllUsers = async (req, res, next) => {
   if (req.session.user.role !== "Owner") filter.isDeleted = { $ne: true };
 
   const users = await User.find(filter)
-    .select("name email isDeleted role")
+    .select(
+      "name email isDeleted picture role maxStorageInBytes authProvider storageDir",
+    )
     .lean();
   for (const user of users) {
     const sessionExist = await Session.exists({ user: user._id });
+    const rootDir = await Directory.findById(user.storageDir)
+      .select("size")
+      .lean();
     user.isLoggedIn = !!sessionExist;
+    user.usedStorageInBytes = rootDir.size;
   }
   res.status(200).json(users);
 };

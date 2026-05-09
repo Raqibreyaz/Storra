@@ -50,6 +50,9 @@ features:
   - feature: a landing page required to introduce the app, but the '/' url is busy in serving the root directory
   - how: created the landing page at '/' and moved all app functionality like files or directories and sub-paths under '/app' prefix
 
+  - feature: A super user dashboard to monitor the application, moving users page to it, a settings page to set app's settings globally applied
+  - how: added settings like pausing file uploads, disabling plan upgrades from free, settings AWS bucket size cap, disabling new registrations etc.
+
   - grace period just means, time left to be demoted to free plan limits
   - on basis of current scenario of the app, it is not required to user scheduled updation of subscription
 
