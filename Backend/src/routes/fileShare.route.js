@@ -13,11 +13,7 @@ import {
   revokeFileAccessSchema,
   shareFileSchema,
 } from "../validators/fileShare.validator.js";
-import {
-  readLimiter,
-  mutateLimiter,
-} from "../middlewares/rateLimiter.middleware.js";
-import throttleRequest from "../middlewares/throttleRequest.middleware.js";
+import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 
 const router = express.Router();
 router.param("fileId", validateId);
@@ -26,16 +22,14 @@ router.param("userId", validateId);
 // I can only see what files are shared with me
 router.get(
   "/",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   filesSharedWithMe,
 );
 
 // me,editor can only see users who access this file
 router.get(
   "/:fileId",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   checkFileAccessAllowed,
   listUsersHavingTheFile,
 );
@@ -43,9 +37,8 @@ router.get(
 // me,editor can only share the file
 router.post(
   "/:fileId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(shareFileSchema),
-  throttleRequest("MUTATE"),
   checkFileAccessAllowed,
   shareFile,
 );
@@ -53,9 +46,8 @@ router.post(
 // me,editor can only revoke access of the file from other users
 router.delete(
   "/:fileId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(revokeFileAccessSchema),
-  throttleRequest("MUTATE"),
   checkFileAccessAllowed,
   revokeAccess,
 );
@@ -63,8 +55,7 @@ router.delete(
 // file_owner,owner,admin can only see what files are shared with file_owner
 router.get(
   "/:userId",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   authorizeDataAccess,
   filesSharedWithMe,
 );
@@ -72,8 +63,7 @@ router.get(
 // file_owner,owner,admin can only see users who access this file
 router.get(
   "/:userId/:fileId",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   authorizeDataAccess,
   listUsersHavingTheFile,
 );
@@ -81,9 +71,8 @@ router.get(
 // file_owner,owner can only share the file
 router.post(
   "/:userId/:fileId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(shareFileSchema),
-  throttleRequest("MUTATE"),
   authorizeDataAccess,
   shareFile,
 );
@@ -91,9 +80,8 @@ router.post(
 // file_owner,owner can only revoke access of the file from other users
 router.delete(
   "/:userId/:fileId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(revokeFileAccessSchema),
-  throttleRequest("MUTATE"),
   authorizeDataAccess,
   revokeAccess,
 );

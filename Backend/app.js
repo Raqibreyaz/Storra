@@ -12,11 +12,19 @@ import subscriptionRoutes from "./src/routes/subscription.route.js";
 import planRoutes from "./src/routes/plan.route.js";
 import checkAuthentication from "./src/middlewares/authenticate.middleware.js";
 import { globalErrorHandler } from "./src/middlewares/errorHandler.middleware.js";
+import { globalLimiter } from "./src/middlewares/rateLimiter.middleware.js";
 
 import "./src/services/taskScheduler.service.js";
 import preventCsrf from "./src/middlewares/preventCsrf.middleware.js";
 
 const app = express();
+
+// Trust the first proxy (necessary for accurate IP detection behind Nginx/Cloudflare)
+// 1 means we know we are exactly behind 1 proxy
+app.set("trust proxy", 1);
+
+// Apply global rate limiting to all routes
+app.use(globalLimiter);
 
 // add database access
 try {

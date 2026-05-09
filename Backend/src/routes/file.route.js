@@ -18,12 +18,7 @@ import {
   setAllowAnyoneSchema,
   initiateFileUploadSchema,
 } from "../validators/file.validator.js";
-import {
-  readLimiter,
-  uploadLimiter,
-  mutateLimiter,
-} from "../middlewares/rateLimiter.middleware.js";
-import throttleRequest from "../middlewares/throttleRequest.middleware.js";
+import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 
 const router = express.Router();
 
@@ -34,55 +29,48 @@ router.param("parentDirId", validateId);
 /* for [data_owner, viewer, editor] only */
 router.post(
   "/initiate/{:parentDirId}",
-  uploadLimiter,
+  applyRateLimit("WRITE"),
   validate(initiateFileUploadSchema),
-  throttleRequest("WRITE"),
   initiateFileUpload,
 );
 router.delete(
   "/cancel/:fileId",
-  uploadLimiter,
-  throttleRequest("WRITE"),
+  applyRateLimit("WRITE"),
   cancelFileUpload,
 );
 router.post(
   "/complete/:fileId",
-  uploadLimiter,
-  throttleRequest("WRITE"),
+  applyRateLimit("WRITE"),
   completeFileUpload,
 );
 
 router.get(
   "/:fileId",
-  readLimiter,
+  applyRateLimit("READ"),
   validate(getFileSchema),
-  throttleRequest("READ"),
   checkFileAccessAllowed,
   getFileContents,
 );
 
 router.patch(
   "/rename/:fileId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(renameFileSchema),
-  throttleRequest("MUTATE"),
   checkFileAccessAllowed,
   renameFile,
 );
 
 router.patch(
   "/set-access/:fileId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(setAllowAnyoneSchema),
-  throttleRequest("MUTATE"),
   checkFileAccessAllowed,
   setAllowAnyone,
 );
 
 router.delete(
   "/:fileId",
-  mutateLimiter,
-  throttleRequest("MUTATE"),
+  applyRateLimit("MUTATE"),
   checkFileAccessAllowed,
   deleteFile,
 );
@@ -90,51 +78,45 @@ router.delete(
 /* for [data_owner, app_owner, admin] only */
 router.post(
   "/initiate/:userId/{:parentDirId}",
-  uploadLimiter,
+  applyRateLimit("WRITE"),
   validate(initiateFileUploadSchema),
-  throttleRequest("WRITE"),
   authorizeDataAccess,
   initiateFileUpload,
 );
 router.post(
   "/complete/:userId/:fileId",
-  uploadLimiter,
-  throttleRequest("WRITE"),
+  applyRateLimit("WRITE"),
   authorizeDataAccess,
   completeFileUpload,
 );
 
 router.get(
   "/:userId/:fileId",
-  readLimiter,
+  applyRateLimit("READ"),
   validate(getFileSchema),
-  throttleRequest("READ"),
   authorizeDataAccess,
   getFileContents,
 );
 
 router.patch(
   "/rename/:userId/:fileId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(renameFileSchema),
-  throttleRequest("MUTATE"),
   authorizeDataAccess,
   renameFile,
 );
 
 router.patch(
   "/set-access/:userId/:fileId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(setAllowAnyoneSchema),
-  throttleRequest("MUTATE"),
   authorizeDataAccess,
   setAllowAnyone,
 );
 
 router.delete(
   "/:userId/:fileId",
-  mutateLimiter,
-  throttleRequest("MUTATE"),
+  applyRateLimit("MUTATE"),
   authorizeDataAccess,
   deleteFile,
 );

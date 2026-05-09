@@ -7,12 +7,7 @@ import {
   updateSubscription,
 } from "../controllers/subscription.controller.js";
 import checkAuthentication from "../middlewares/authenticate.middleware.js";
-import {
-  mutateLimiter,
-  readLimiter,
-  uploadLimiter,
-} from "../middlewares/rateLimiter.middleware.js";
-import throttleRequest from "../middlewares/throttleRequest.middleware.js";
+import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
 import {
   cancelSubscriptionSchema,
@@ -35,35 +30,31 @@ router.use(express.json());
 
 router.post(
   "/",
-  uploadLimiter,
+  applyRateLimit("WRITE"),
   validate(createOrUpdateSubscriptionSchema),
-  throttleRequest("WRITE"),
   checkAuthentication,
   createSubscription,
 );
 
 router.get(
   "/",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   checkAuthentication,
   getSubscription,
 );
 
 router.put(
   "/cancel",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(cancelSubscriptionSchema),
-  throttleRequest("MUTATE"),
   checkAuthentication,
   cancelSubscription,
 );
 
 router.put(
   "/update",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(createOrUpdateSubscriptionSchema),
-  throttleRequest("MUTATE"),
   checkAuthentication,
   updateSubscription,
 );

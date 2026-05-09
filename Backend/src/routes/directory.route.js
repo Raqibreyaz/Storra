@@ -13,12 +13,7 @@ import {
   createDirectorySchema,
   renameDirectorySchema,
 } from "../validators/directory.validator.js";
-import {
-  readLimiter,
-  uploadLimiter,
-  mutateLimiter,
-} from "../middlewares/rateLimiter.middleware.js";
-import throttleRequest from "../middlewares/throttleRequest.middleware.js";
+import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 
 const router = express.Router();
 
@@ -29,72 +24,63 @@ router.param("parentDirId", validateId);
 /* for [data_owner] only currently*/
 router.get(
   "/{:dirId}",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   getDirectoryContents,
 );
 
 router.get(
   "/:dirId/descendants/count",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   countDescendantDirsAndFiles,
 );
 
 router.post(
   "/{:parentDirId}",
-  uploadLimiter,
+  applyRateLimit("WRITE"),
   validate(createDirectorySchema),
-  throttleRequest("WRITE"),
   createDirectory,
 );
 
 router.patch(
   "/:dirId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(renameDirectorySchema),
-  throttleRequest("MUTATE"),
   updateDirectoryName,
 );
 
 router.delete(
   "/:dirId",
-  mutateLimiter,
-  throttleRequest("MUTATE"),
+  applyRateLimit("MUTATE"),
   deleteDirectory,
 );
 
 /* for [data_owner, app_owner, admin] only */
 router.get(
   "/:userId/{:dirId}",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   authorizeDataAccess,
   getDirectoryContents,
 );
 
 router.post(
   "/:userId/:parentDirId",
-  uploadLimiter,
+  applyRateLimit("WRITE"),
   validate(createDirectorySchema),
-  throttleRequest("WRITE"),
   authorizeDataAccess,
   createDirectory,
 );
 
 router.patch(
   "/:userId/:dirId",
-  mutateLimiter,
+  applyRateLimit("MUTATE"),
   validate(renameDirectorySchema),
-  throttleRequest("MUTATE"),
   authorizeDataAccess,
   updateDirectoryName,
 );
 
 router.delete(
   "/:userId/:dirId",
-  mutateLimiter,
-  throttleRequest("MUTATE"),
+  applyRateLimit("MUTATE"),
   authorizeDataAccess,
   deleteDirectory,
 );

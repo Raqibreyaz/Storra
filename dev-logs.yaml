@@ -149,5 +149,11 @@ issues:
   - issue: input from client like directory name can have malicious script injected triggering XSS attack or it may have unexpcted type of data causing SQL injection attack
   - fix: centralised the input validation + sanitization part from contollers so that each input passes through proper validation by zod and dom purifier
 
+  - issue: rate limiting + throttling per route increased complexity drastically
+  - fix: moved the rate limiting to a generic global limiter and only throttling per route to make code maintainability easy
+
+  - issue: throttling requests by using setTimeout(), wastes system resources, busy file descriptor, client waiting in dark, increases RAM unncessarily, finding the entry and checking for throttling can cause race condition as these are 2 different ops and 2 requests simultaneously can by pass the throttler
+  - fix: removed throttling logic for now as the system is not handling that much traffic to increase code complexity, so currently only focused on rate limiting, while rate limiting is enhanced by removing all individual limiters with one adaptive limiter
+
 LOGS:  
   - i found a very interesting bug while uploading file to s3, actually i used mongodb id as s3 object key, so instead of id.toString() i did String(id) and behavior is different, String(id) even added double quotes in the objectKey, means s3 object with quoted name but when i did .toString then all things worked expectedly

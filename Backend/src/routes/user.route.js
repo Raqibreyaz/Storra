@@ -18,12 +18,7 @@ import {
   deleteUserSchema,
   changeUserRoleSchema,
 } from "../validators/user.validator.js";
-import {
-  readLimiter,
-  mutateLimiter,
-  adminLimiter,
-} from "../middlewares/rateLimiter.middleware.js";
-import throttleRequest from "../middlewares/throttleRequest.middleware.js";
+import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 
 const router = express.Router();
 
@@ -32,30 +27,26 @@ router.param("userId", validateId);
 // only authenticated users will be allowed
 router.get(
   "/",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   getUser,
 );
 
 // allow only authenticated users to logout
 router.post(
   "/logout",
-  mutateLimiter,
-  throttleRequest("LOGOUT"),
+  applyRateLimit("LOGOUT"),
   logoutUser,
 );
 router.post(
   "/logout/all",
-  mutateLimiter,
-  throttleRequest("LOGOUT_ALL"),
+  applyRateLimit("LOGOUT_ALL"),
   logoutUserFromAllDevices,
 );
 
 // only non-regular users will be allowed
 router.get(
   "/all",
-  readLimiter,
-  throttleRequest("READ"),
+  applyRateLimit("READ"),
   allowOnlyTo([Role.OWNER, Role.ADMIN, Role.MANAGER]),
   getAllUsers,
 );
@@ -64,9 +55,8 @@ router.get(
 // only can delete users which are under them
 router.delete(
   "/:userId",
-  adminLimiter,
+  applyRateLimit("ADMIN"),
   validate(deleteUserSchema),
-  throttleRequest("ADMIN"),
   allowOnlyTo([Role.OWNER, Role.ADMIN]),
   limitPrivileges,
   deleteUser,
@@ -76,8 +66,7 @@ router.delete(
 // only can logout users which are under them
 router.post(
   "/logout/:userId",
-  adminLimiter,
-  throttleRequest("ADMIN"),
+  applyRateLimit("ADMIN"),
   allowOnlyTo([Role.OWNER, Role.ADMIN, Role.MANAGER]),
   limitPrivileges,
   forceLogout,
@@ -85,8 +74,7 @@ router.post(
 
 router.patch(
   "/recover/:userId",
-  adminLimiter,
-  throttleRequest("ADMIN"),
+  applyRateLimit("ADMIN"),
   allowOnlyTo([Role.OWNER]),
   recoverUser,
 );
@@ -95,9 +83,8 @@ router.patch(
 // a user can only change role for which he is allowed
 router.patch(
   "/role/:userId",
-  adminLimiter,
+  applyRateLimit("ADMIN"),
   validate(changeUserRoleSchema),
-  throttleRequest("ADMIN"),
   allowOnlyTo([Role.OWNER, Role.ADMIN, Role.MANAGER]),
   limitPrivileges,
   changeUserRole,
