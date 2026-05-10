@@ -1,14 +1,12 @@
 TODO:
   ISSUES:
-    - adding some setting at owner dashboard to:
-      - disable payment temporarily
-      - seeing subscription events 
-      - allow only cors allowed origin(s) to make request
-      - etc.
     - using cron job:
       - cleanup zombie s3 objects
       - initiated file entries in DB
       - created subscriptions
+    - creating separate pages instead of section in the admin dashboard
+    - centralizing duplicate code(like formatSize(bytes)) across the codebase
+    - need current global storage usage status to compare with hard-capped global storage
     - nodemailer failed to refresh token, need to publish app to production maybe
     - dangerous site error occuring on previewing a file
     - github logged in, but cookie didnt get saved, while google and local login works
@@ -54,3 +52,4 @@ DONE:
     - sanitizing input where not performed
     - how the rate limiting part in the entire app can be made scalable, currently not every route is rate limited, many are rate limited but i dont feel it good, limits are taken from env vars else default limits are used, what else things you find broken or can be made significantly better here in rate limiting
     - what do you find which can be made significantly better for throttling, problems in current implementation, and how to make it easy, readable and less code
+    - limiting no of users in the app with settings

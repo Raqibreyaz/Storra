@@ -21,11 +21,10 @@ import {
   checkUserWithPasswordAndSendOTPSchema,
   updatePasswordSchema,
 } from "../validators/auth.validator.js";
-import {
-  applyRateLimit,
-} from "../middlewares/rateLimiter.middleware.js";
+import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 import checkUserExist from "../middlewares/checkUserExist.middleware.js";
 import allowLocalUsersOnly from "../middlewares/allowLocalUsersOnly.middleware.js";
+import { blockNewRegistration } from "../middlewares/appSetting.middleware.js";
 
 const router = express.Router();
 
@@ -34,6 +33,7 @@ router.post(
   "/register/send-otp",
   applyRateLimit("OTP"),
   validate(checkUserAndSendOTPSchema),
+  blockNewRegistration,
   checkUserNotExist,
   sendOtp,
 );
@@ -79,11 +79,7 @@ router.post(
   validate(googleLoginSchema),
   loginWithGoogle,
 );
-  router.get(
-  "/github",
-  applyRateLimit("OAUTH"),
-  githubAuth,
-);
+router.get("/github", applyRateLimit("OAUTH"), githubAuth);
 router.get(
   "/login/github",
   applyRateLimit("OAUTH"),

@@ -13,6 +13,7 @@ import {
   cancelSubscriptionSchema,
   createOrUpdateSubscriptionSchema,
 } from "../validators/subscription.validator.js";
+import { blockFreePlanUpgrade } from "../middlewares/appSetting.middleware.js";
 
 const router = express.Router();
 
@@ -32,16 +33,12 @@ router.post(
   "/",
   applyRateLimit("WRITE"),
   validate(createOrUpdateSubscriptionSchema),
+  blockFreePlanUpgrade, //conditionally blocking upgrade from free plan
   checkAuthentication,
   createSubscription,
 );
 
-router.get(
-  "/",
-  applyRateLimit("READ"),
-  checkAuthentication,
-  getSubscription,
-);
+router.get("/", applyRateLimit("READ"), checkAuthentication, getSubscription);
 
 router.put(
   "/cancel",

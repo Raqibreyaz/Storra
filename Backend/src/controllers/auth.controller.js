@@ -85,14 +85,14 @@ export const loginWithGoogle = async (req, res, next) => {
     if (userDoc.providerId !== String(userData.sub))
       throw new ApiError(
         400,
-        `User already exists as a ${userDoc.authProvider} user`
+        `User already exists as a ${userDoc.authProvider} user`,
       );
 
     // when user got soft deleted
     if (userDoc.isDeleted)
       throw new ApiError(
         403,
-        "Your account is flagged as deleted, Contact App Owner for further details!"
+        "Your account is flagged as deleted, Contact App Owner for further details!",
       );
 
     // first check if user hasn't exhausted number of sessions limits
@@ -198,13 +198,13 @@ export const loginWithGithub = async (req, res, next) => {
     if (user.isDeleted)
       throw new ApiError(
         403,
-        "Your account is flagged as deleted, Contact App Owner for further details!"
+        "Your account is flagged as deleted, Contact App Owner for further details!",
       );
 
     if (user.providerId !== String(githubId))
       throw new ApiError(
         400,
-        `User already exists as a ${user.authProvider} user`
+        `User already exists as a ${user.authProvider} user`,
       );
 
     // first check if user hasn't exhausted number of sessions limits
@@ -250,7 +250,7 @@ export const githubAuth = async (req, res, next) => {
     httpOnly: true,
     sameSite: "none",
     signed: true,
-    secure: process.env.NODE_ENV !== 'DEVELOPMENT',
+    secure: process.env.NODE_ENV !== "DEVELOPMENT",
   });
 
   const params = new URLSearchParams({

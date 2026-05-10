@@ -1,8 +1,14 @@
 import express from "express";
-import { updateAppSettings } from "../controllers/appSetting.controller.js";
+import {
+  getAppSettings,
+  updateAppSettings,
+} from "../controllers/appSetting.controller.js";
+import validate from "../middlewares/validate.middleware.js";
+import { appSettingSchema } from "../validators/appSetting.validator.js";
 
 const router = express.Router();
 
-router.put("/update", updateAppSettings);
+router.get("/", getAppSettings);
+router.put("/", validate(appSettingSchema), updateAppSettings);
 
 export default router;

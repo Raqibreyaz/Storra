@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const appSettingSchema = new mongoose.Schema({
+  key: {
+    type: String,
+    unique: true,
+    default: "global",
+  },
   newRegistrationDisabled: {
     type: Boolean,
     default: false,
@@ -12,7 +17,8 @@ const appSettingSchema = new mongoose.Schema({
     },
     bytesLimit: {
       type: Number,
-      default: Infinity,
+      min: 0,
+      default: null,
     },
   },
   maxFileUploadSize: {
@@ -22,12 +28,24 @@ const appSettingSchema = new mongoose.Schema({
     },
     bytesLimit: {
       type: Number,
-      default: Infinity,
+      min: 0,
+      default: null,
     },
   },
   fileUploadDisabled: {
     type: Boolean,
     default: false,
+  },
+  noOfUsersAllowed: {
+    enabled: {
+      type: Boolean,
+      default: false,
+    },
+    count: {
+      type: Number,
+      min: 1,
+      default: null,
+    },
   },
   freePlanUpgradeDisabled: {
     type: Boolean,

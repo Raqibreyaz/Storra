@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import User from "../models/user.model.js";
 import Directory from "../models/directory.model.js";
 import Session from "../models/session.model.js";
+import { getAppSettings } from "../services/appSetting.service.js";
+import ApiError from "../helpers/apiError.js";
 
 export default async function createUserWithEssentials({
   name,
@@ -13,9 +15,22 @@ export default async function createUserWithEssentials({
   picture,
   role,
 }) {
+  // stop when user registration is not allowed
+  const appSettings = await getAppSettings();
+  if (appSettings) {
+    const noOfUsers = await User.countDocuments();
+    if (
+      appSettings.newRegistrationDisabled ||
+      (appSettings.noOfUsersAllowed.enabled &&
+        appSettings.noOfUsersAllowed.count <= noOfUsers)
+    )
+      throw new ApiError(403, "User registration temporarily not available!");
+  }
+
   const storageDirId = new ObjectId();
   const userId = new ObjectId();
 
+  let userSession = null;
   const session = await mongoose.startSession();
   try {
     await session.withTransaction(async () => {
@@ -46,16 +61,15 @@ export default async function createUserWithEssentials({
         { session },
       );
 
-      const userSession = await Session.insertOne(
+      userSession = await Session.insertOne(
         {
           user: userId,
           expiresAt: new Date((Date.now() / 1000 + 86400) * 1000),
         },
         { session },
       );
-
-      return { userId: userId.toString(), sessionId: userSession.id };
     });
+    return { userId: userId.toString(), sessionId: userSession.id };
   } finally {
     await session.endSession();
   }
