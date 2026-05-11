@@ -60,6 +60,7 @@ export const blockFileUpload = (req, res, next) => {
   //       `Max ${formatSize(diff)} size file can be uploaded only!`,
   //     );
   //   }
+  return next();
 };
 
 export const blockFreePlanUpgrade = (req, res, next) => {

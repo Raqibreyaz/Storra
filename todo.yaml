@@ -9,7 +9,7 @@ TODO:
     - need current global storage usage status to compare with hard-capped global storage
     - nodemailer failed to refresh token, need to publish app to production maybe
     - dangerous site error occuring on previewing a file
-    - github logged in, but cookie didnt get saved, while google and local login works
+    - github logged in, but cookie didnt get saved, while google and local login works -> didt find this in chrome
   
   FEATURE_REQUEST:
     - import from google drive

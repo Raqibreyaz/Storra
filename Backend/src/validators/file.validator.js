@@ -7,7 +7,7 @@ export const initiateFileUploadSchema = z.object({
       .number({ error: "FileSize should be a number" })
       .min(0, { error: "FileSize cannot be negative" }),
     fileName: strictSanitizedString("Filename"),
-    fileType: strictSanitizedString("FileType"),
+    fileType: strictSanitizedString("FileType").default("application/octet-stream"),
   }),
 });
 
