@@ -38,7 +38,9 @@ export const deleteUser = async (req, res, next) => {
   if (req.session.user._id.equals(userId))
     throw new ApiError(400, "You cant delete yourself!");
 
-  const user = await User.findOne({ _id: userId }).select("_id name").lean();
+  const user = await User.findOne({ _id: userId })
+    .select("_id name subscription")
+    .lean();
   if (!user) throw new ApiError(400, "Given User doesn't exist!");
 
   const subscription = user.subscription
