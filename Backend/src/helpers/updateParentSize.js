@@ -1,4 +1,5 @@
 import Directory from "../models/directory.model.js";
+import ApiError from "./apiError.js";
 
 export default async function updateParentSize(
   parentId,

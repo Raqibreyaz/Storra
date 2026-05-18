@@ -9,5 +9,4 @@ export default function createCookie(res, sessionId) {
     maxAge: expiryAgeInSec * 1000,
     secure: process.env.NODE_ENV !== 'DEVELOPMENT',
   });
-  console.log("cookie assigned to user:");
 }

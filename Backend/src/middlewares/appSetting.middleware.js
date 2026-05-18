@@ -64,6 +64,7 @@ export const blockFileUpload = (req, res, next) => {
 };
 
 export const blockFreePlanUpgrade = (req, res, next) => {
+  const appSettings = req.appSettings;
   // allow on non-subscription route
   if (!appSettings || !req.body.planKey) return next();
 
