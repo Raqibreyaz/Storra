@@ -1,9 +1,8 @@
 TODO:
   ISSUES:
-    - subscribing to paid plans not working
+    - adding subscription pause functionality in frontend
     - centralizing subscription checks of file upload into a middleware
     - remove the manager role for now
-    - handling user subscription while deleting/disabling user
     - creating separate pages instead of section in the admin dashboard
     - centralizing duplicate code(like formatSize(bytes)) across the codebase
     - need current global storage usage status to compare with hard-capped global storage
@@ -58,3 +57,7 @@ DONE:
     - github logged in, but cookie didnt get saved, while google and local login works -> didt find this in chrome
     - dangerous site error occuring on previewing a file -> not getting as of now
     - user deletion/disabling issue
+    - subscribing to paid plans not working -> not defined variable used
+    - handling user subscription while deleting/disabling user:
+      - soft deletion: pause subscription in DB + razorpay
+      - hard deletion: cancel rzp subscription on every state except already cancelled + cancel_at_period_end=false, expired, completed then delete the subscription from DB

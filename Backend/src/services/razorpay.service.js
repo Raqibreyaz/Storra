@@ -7,7 +7,12 @@ const rzp = new Razorpay({
   key_secret: process.env.RZP_KEY_SECRET,
 });
 
-export const createSubscription = (planId, totalCount, planKey, customerEmail) => {
+export const createSubscription = (
+  planId,
+  totalCount,
+  planKey,
+  customerEmail,
+) => {
   return rzp.subscriptions.create({
     plan_id: planId,
     customer_notify: true,
@@ -18,6 +23,10 @@ export const createSubscription = (planId, totalCount, planKey, customerEmail) =
       customerEmail,
     },
   });
+};
+
+export const pauseSubscription = (subscriptionId) => {
+  return rzp.subscriptions.pause(subscriptionId, { pause_at: "now" });
 };
 
 export const cancelSubscription = (subscriptionId, cancelAtPeriodEnd) => {

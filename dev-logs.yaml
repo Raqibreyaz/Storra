@@ -170,5 +170,8 @@ issues:
   - issue: handling boolean values using query strings was inconsistent('true' instead of true) 
   - fix: so moved it from query param to body
 
+  - issue: while deleting user, it's subscription were unhandled, can cause issues like billing, orphanned subscription even after user deletion
+  - fix: pause subscription when user gets suspended, cancel subscription(except when already cancelled) on actual user deletion
+
 LOGS:  
   - i found a very interesting bug while uploading file to s3, actually i used mongodb id as s3 object key, so instead of id.toString() i did String(id) and behavior is different, String(id) even added double quotes in the objectKey, means s3 object with quoted name but when i did .toString then all things worked expectedly

@@ -5,8 +5,13 @@ import User from "../models/user.model.js";
 import Session from "../models/session.model.js";
 import ApiError from "../helpers/apiError.js";
 import FileShare from "../models/fileShare.model.js";
+import Subscription from "../models/subscription.model.js";
 
 import { deleteObject } from "../services/aws.service.js";
+import {
+  cancelSubscription,
+  pauseSubscription,
+} from "../services/razorpay.service.js";
 
 export const getUser = async (req, res, next) => {
   const directory = await Directory.findById(req.session.user.storageDir)
@@ -35,6 +40,10 @@ export const deleteUser = async (req, res, next) => {
 
   const user = await User.findOne({ _id: userId }).select("_id name").lean();
   if (!user) throw new ApiError(400, "Given User doesn't exist!");
+
+  const subscription = user.subscription
+    ? await Subscription.findById(user.subscription).lean()
+    : null;
 
   // take all the user's files
   let files = null;
@@ -69,11 +78,26 @@ export const deleteUser = async (req, res, next) => {
         );
         await FileShare.deleteMany({ user: userId }, { session });
         await File.deleteMany({ user: userId }, { session });
+
+        if (subscription)
+          await Subscription.deleteOne({ _id: subscription._id }, { session });
+
         await User.deleteOne({ _id: userId }, { session });
       }
     });
   } finally {
     await session.endSession();
+  }
+
+  // webhook will update it in DB
+  if (subscription) {
+    if (!isPermanent)
+      await pauseSubscription(subscription.razorpaySubscriptionId);
+    else if (
+      subscription.status !== "cancelled" ||
+      subscription.cancelAtPeriodEnd
+    )
+      await cancelSubscription(subscription.razorpaySubscriptionId, false);
   }
 
   // deleting from s3, when permanently deleting 'files' will not be null

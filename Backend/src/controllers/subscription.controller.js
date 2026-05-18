@@ -52,7 +52,7 @@ export const createSubscription = async (req, res) => {
           billingCycle: plan.billingCycle,
           status: "awaiting_activation",
           planId: plan.razorpayPlanId,
-          cancelAtPeriodEnd: false,
+          cancelAtPeriodEnd: null,
           graceEndsAt: null,
         },
       },

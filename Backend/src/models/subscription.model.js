@@ -45,7 +45,7 @@ const schema = new mongoose.Schema({
   },
   cancelAtPeriodEnd: {
     type: Boolean,
-    default: false,
+    default: null,
   },
   graceEndsAt: {
     type: Date,
