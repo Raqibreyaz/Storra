@@ -27,7 +27,8 @@ export const getUser = async (req, res, next) => {
 // delete user either soft/hard
 export const deleteUser = async (req, res, next) => {
   const { userId } = req.params;
-  const isPermanent = req.query.permanent === "true";
+  const isPermanent =
+    req.body?.permanent === "true" || req.body?.permanent === true;
 
   if (req.session.user._id.equals(userId))
     throw new ApiError(400, "You cant delete yourself!");
