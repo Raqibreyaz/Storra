@@ -24,6 +24,6 @@ fi
 
 # restart the server with the new changes
 echo "reloading server with the latest changes..."
-pm2 reload storraBackend
+pm2 reload storraBackend --update-env
 
 echo "Server deployed successfully!"
