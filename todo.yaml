@@ -1,5 +1,6 @@
 TODO:
   ISSUES:
+    - inform developer through email if deployment fails
     - adding subscription pause functionality in frontend
     - centralizing subscription checks of file upload into a middleware
     - remove the manager role for now

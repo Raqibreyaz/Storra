@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import redisClient from "../config/redis.js";
 import verifyGithubWebhookSignature from "../helpers/verifyGithubWebhookSignature.js";
+import notifyDeveloper from "../services/notifyDeveloper.service.js";
 
 export const githubWebhook = async (req, res) => {
   const signature = req.headers["x-hub-signature-256"];
@@ -9,8 +10,10 @@ export const githubWebhook = async (req, res) => {
 
   console.log("verifying signature...");
   // reject malformed event
-  if (!verifyGithubWebhookSignature(signature, req.body))
+  if (!verifyGithubWebhookSignature(signature, req.body)) {
+    console.log("malformed event received!");
     return res.sendStatus(400);
+  }
 
   console.log("signature verified!!");
 
@@ -62,24 +65,51 @@ export const githubWebhook = async (req, res) => {
   // sending early ACK to github
   res.sendStatus(200);
 
-  // if (Object.entries(deliveryIds).length >= 5) deliveryIds = {};
-  // deliveryIds[deliveryId] = true;
-
   const scriptPath =
     "/home/ubuntu/Personal-Google-Drive/Backend/scripts/deploy-backend.sh";
 
+  let stdErrBuf = "";
+  let stdOutBuf = "";
+
   const childProcess = spawn("bash", [scriptPath], {
     env: { ...process.env, SHOULD_INSTALL: String(shouldInstall) },
-    stdio: "inherit",
   });
 
-  childProcess.on("close", (code) => {
+  childProcess.stderr.on("data", (chunk) => {
+    stdErrBuf += chunk.toString();
+    process.stderr.write(chunk);
+  });
+  childProcess.stdout.on("data", (chunk) => {
+    stdOutBuf += chunk.toString();
+    process.stdout.write(chunk);
+  });
+
+  childProcess.on("close", (code, signal) => {
     if (code === 0) {
-      console.log("Script executed successfully!");
-    } else console.log("Script failed!");
-  });
+      return console.log("Script executed successfully!");
+    }
 
+    const error = new Error(
+      `Deployment script failed with code=${code ?? null} signal=${signal ?? null}`,
+    );
+
+    console.log("Script failed!");
+    notifyDeveloper(error, {
+      deliveryId,
+      eventType,
+      branch: payload.ref,
+      shouldInstall,
+      stderr: stdErrBuf,
+    });
+  });
   childProcess.on("error", (error) => {
     console.log("Error in spawning the process!", error);
+    notifyDeveloper(error, {
+      deliveryId,
+      eventType,
+      branch: payload.ref,
+      shouldInstall,
+      stderr: stdErrBuf,
+    });
   });
 };
