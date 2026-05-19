@@ -56,6 +56,9 @@ features:
   - feature: app settings could be required for any request, so it should be present each time for each request
   - how: added a global middleware to add the app's settings for each request
 
+  - feature: deployment script need to be adaptible, if new packages are installed then it should do 'pnpm install' or if no new packages are installed then it should skip it
+  - fix: in the webhook payload, github sends all the commits + head_commit in the push, head_commit is only the latest commit happened in the push, so we need to check each commit and if packages.json appears in any(created,removed,modified) then we will mark installation as required
+
   - grace period just means, time left to be demoted to free plan limits
   - on basis of current scenario of the app, it is not required to user scheduled updation of subscription
 
