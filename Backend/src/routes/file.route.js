@@ -20,6 +20,7 @@ import {
 } from "../validators/file.validator.js";
 import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 import { blockFileUpload } from "../middlewares/appSetting.middleware.js";
+import blockFileUploadOnInactiveSubscription from "../middlewares/blockFileUploadOnInactiveSubscription.middleware.js";
 
 const router = express.Router();
 
@@ -33,6 +34,7 @@ router.post(
   applyRateLimit("WRITE"),
   validate(initiateFileUploadSchema),
   blockFileUpload,
+  blockFileUploadOnInactiveSubscription,
   initiateFileUpload,
 );
 router.delete("/cancel/:fileId", applyRateLimit("WRITE"), cancelFileUpload);
@@ -76,6 +78,7 @@ router.post(
   validate(initiateFileUploadSchema),
   authorizeDataAccess,
   blockFileUpload,
+  blockFileUploadOnInactiveSubscription,
   initiateFileUpload,
 );
 router.post(

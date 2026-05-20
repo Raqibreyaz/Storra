@@ -6,7 +6,6 @@ import Directory from "../models/directory.model.js";
 import User from "../models/user.model.js";
 import File from "../models/file.model.js";
 import FileShare from "../models/fileShare.model.js";
-import Subscription from "../models/subscription.model.js";
 import updateParentSize from "../helpers/updateParentSize.js";
 
 import {
@@ -14,13 +13,11 @@ import {
   deleteObject,
   getObjectPresignedUrl,
   getObjectSize,
-  renameObject,
 } from "../services/aws.service.js";
 import {
   SAFE_INLINE_TYPES,
   RENDER_AS_TEXT,
 } from "../constants/fileRenderConstants.js";
-import { PLANS } from "../config/plans.js";
 
 export const getFileContents = async (req, res, next) => {
   const fileId = req.params.fileId;
@@ -68,28 +65,7 @@ export const initiateFileUpload = async (req, res, next) => {
 
   const user = await User.findById(userId).lean();
   const rootDir = await Directory.findById(user.storageDir).lean();
-  let effectiveQuota = user.maxStorageInBytes;
-
-  const subscription = await Subscription.findOne({ user: userId }).lean();
-  if (
-    subscription?.razorpaySubscriptionId &&
-    subscription.status !== "active"
-  ) {
-    if (["paused", "past_due", "in_grace"].includes(subscription.status))
-      throw new ApiError(
-        403,
-        "Upload not allowed due to inactive subscription!",
-      );
-
-    const shouldAllowOnCancel =
-      subscription.status === "cancelled" &&
-      subscription.cancelAtPeriodEnd &&
-      subscription.graceEndsAt > new Date();
-
-    if (subscription.status === "awaiting_activation" || !shouldAllowOnCancel) {
-      effectiveQuota = PLANS.free.storageQuotaBytes;
-    }
-  }
+  let effectiveQuota = req.userStorageEffectiveQuota || user.maxStorageInBytes;
 
   const usedStorageInBytes = rootDir?.size || 0;
   const maxStorageInBytes = effectiveQuota;
