@@ -20,9 +20,6 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.1025.0
         version: 3.1025.0
-      app-root-path:
-        specifier: ^3.1.0
-        version: 3.1.0
       axios:
         specifier: ^1.13.6
         version: 1.13.6
@@ -53,9 +50,6 @@ importers:
       jsdom:
         specifier: ^28.1.0
         version: 28.1.0
-      mime:
-        specifier: ^4.1.0
-        version: 4.1.0
       mongodb:
         specifier: ^7.0.0
         version: 7.1.0
@@ -702,10 +696,6 @@ packages:
     resolution: {integrity: sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==}
     engines: {node: '>=12'}
 
-  app-root-path@3.1.0:
-    resolution: {integrity: sha512-biN3PwB2gUtjaYy/isrU3aNWI5w+fAfvHkSvCKeQGxhmYpwKFUxudR3Yya+KqVRHBmEDYh+/lTozYCFbmzX4nA==}
-    engines: {node: '>= 6.0.0'}
-
   append-field@1.0.0:
     resolution: {integrity: sha512-klpgFSWLW1ZEs8svjfb7g4qWY0YS5imI82dTg+QahUvJ8YqAY0P10Uk8tTyh9ZGuYEZEMaeJYCF5BFuX552hsw==}
 
@@ -1129,11 +1119,6 @@ packages:
   mime-types@3.0.2:
     resolution: {integrity: sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A==}
     engines: {node: '>=18'}
-
-  mime@4.1.0:
-    resolution: {integrity: sha512-X5ju04+cAzsojXKes0B/S4tcYtFAJ6tTMuSPBEn9CPGlrWr8Fiw7qYeLT0XyH80HSoAoqWCaz+MWKh22P7G1cw==}
-    engines: {node: '>=16'}
-    hasBin: true
 
   minimatch@9.0.9:
     resolution: {integrity: sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg==}
@@ -2755,8 +2740,6 @@ snapshots:
 
   ansi-styles@6.2.3: {}
 
-  app-root-path@3.1.0: {}
-
   append-field@1.0.0: {}
 
   asynckit@0.4.0: {}
@@ -3232,8 +3215,6 @@ snapshots:
   mime-types@3.0.2:
     dependencies:
       mime-db: 1.54.0
-
-  mime@4.1.0: {}
 
   minimatch@9.0.9:
     dependencies:

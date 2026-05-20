@@ -51,7 +51,6 @@ app.use(cookieParser(process.env.COOKIE_PARSER_KEY));
 
 /** Webhooks */
 // body should be passed as raw to webhook
-app.use("/deploy", deployRoutes);
 app.use("/subscriptions", subscriptionRoutes);
 
 // attach the whole app settings to each route
