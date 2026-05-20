@@ -68,56 +68,10 @@ export const githubWebhook = async (req, res) => {
   const scriptPath =
     "/home/ubuntu/Personal-Google-Drive/Backend/scripts/deploy-backend.sh";
 
-  let stdErrBuf = "";
-  let stdOutBuf = "";
-
   const childProcess = spawn("bash", [scriptPath], {
     env: { ...process.env, SHOULD_INSTALL: String(shouldInstall) },
     detached: true, // run the child independently
     stdio: "ignore", // remove stdio connection with parent
   });
   childProcess.unref(); //parent will not wait for child to finish
-
-  if (!childProcess.stderr) {
-    console.log({ stderr: childProcess.stderr, stdout: childProcess.stdout });
-    return;
-  }
-
-  childProcess.stderr.on("data", (chunk) => {
-    stdErrBuf += chunk.toString();
-    process.stderr.write(chunk);
-  });
-  childProcess.stdout.on("data", (chunk) => {
-    stdOutBuf += chunk.toString();
-    process.stdout.write(chunk);
-  });
-
-  childProcess.on("close", (code, signal) => {
-    if (code === 0) {
-      return console.log("Script executed successfully!");
-    }
-
-    const error = new Error(
-      `Deployment script failed with code=${code ?? null} signal=${signal ?? null}`,
-    );
-
-    console.log("Script failed!");
-    notifyDeveloper(error, {
-      deliveryId,
-      eventType,
-      branch: payload.ref,
-      shouldInstall,
-      stderr: stdErrBuf,
-    });
-  });
-  childProcess.on("error", (error) => {
-    console.log("Error in spawning the process!", error);
-    notifyDeveloper(error, {
-      deliveryId,
-      eventType,
-      branch: payload.ref,
-      shouldInstall,
-      stderr: stdErrBuf,
-    });
-  });
 };
