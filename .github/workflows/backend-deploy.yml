@@ -6,11 +6,7 @@ on:
   workflow_dispatch: 
 
 env:
-  REPO_DIR: "$HOME/Storra"
-  BACKEND_DIR: "$HOME/Storra/Backend"
   SSH_KEY_PATH: "$HOME/.ssh/instance-key-pair.pem"
-  SSH_HOST: "storra-backend.servehttp.com"
-  SSH_USER: "ubuntu"
 
 jobs:
   job:
@@ -42,7 +38,7 @@ jobs:
         # if: steps.filter.outputs.backend == 'true'
         run: |
             mkdir -p ~/.ssh
-            echo "Saving SSH Key..."
+            echo "[INFO] Saving SSH Key..."
             cat > "${{env.SSH_KEY_PATH}}" <<EOF
             ${{secrets.AWS_INSTANCE_KEY_PAIR}}
             EOF
@@ -51,24 +47,45 @@ jobs:
       - name: SSH into backend server
         # if: steps.filter.outputs.backend == 'true'
         run: | 
-            ssh -o StrictHostKeyChecking=no -i "${{env.SSH_KEY_PATH}}" ubuntu@storra-backend.servehttp.com <<EOF
+            ssh -o StrictHostKeyChecking=no -i "${{env.SSH_KEY_PATH}}" ubuntu@storra-backend.servehttp.com <<'EOF'
             
             set -e
 
-            cd "${{env.REPO_DIR}}"
+            REPO_DIR="$HOME/Storra"
+            BACKEND_DIR="$REPO_DIR/Backend"
+            LOG_DIR="$HOME/deploy-logs"
+            LOG_FILE="$LOG_DIR/storraBackend-$(date +%Y%m%d-%H%M%S).log"
+
+            # all log files will go to this directory
+            mkdir -p "$LOG_DIR"
+
+            # all error/log will be written to this file
+            exec >>"$LOG_FILE" 2>&1
+
+            on_error() {
+            local exit_code=$?
+            local line_no=$1
+            echo "[ERROR] Deployment failed at line $line_no with exit code $exit_code"
+            exit "$exit_code"
+            }
+            trap 'on_error $LINENO' ERR
+
+            echo "[INFO] Starting deployment at $(date -Is)"
+
+            cd "$REPO_DIR"
             
-            echo "Pulling Latest changes from Github..."
+            echo "[INFO] Pulling Latest changes from Github..."
             git fetch origin main
             git reset --hard origin/main
 
             if [ "${{steps.filter.outputs.deps}}" = "true" ]; then
-                echo "Installing new Dependencies..."
-                cd "${{env.BACKEND_DIR}}"
+                echo "[INFO] package manifest changed, running pnpm install..."
+                cd "$BACKEND_DIR"
                 pnpm install --frozen-lockfile
-                cd "${{env.REPO_DIR}}"
+                cd "$REPO_DIR"
             fi
 
             pm2 reload storraBackend --update-env 
-            echo "Server deloyed Successfully."
+            echo "[INFO] Server deployed successfully at $(date -Is)"
 
             EOF
