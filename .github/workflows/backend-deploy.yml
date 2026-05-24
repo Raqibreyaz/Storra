@@ -47,9 +47,16 @@ jobs:
       - name: SSH into backend server
         # if: steps.filter.outputs.backend == 'true'
         run: | 
-            ssh -o StrictHostKeyChecking=no -i "${{env.SSH_KEY_PATH}}" ubuntu@storra-backend.servehttp.com <<'EOF'
+            ssh -o StrictHostKeyChecking=no -i "${{env.SSH_KEY_PATH}}" ubuntu@storra-backend.servehttp.com 'bash -se' <<'EOF'
             
-            set -e
+            # -e: exit when error occurs
+            # -u: not defined variable usage will be treated as error
+            # -o pipefail: if a pipeline fails then whole pipeline will be treated as failed
+            set -Eeuo pipefail
+
+            export PNPM_HOME="$HOME/.local/share/pnpm"
+            export NODE_BIN_DIR=/home/ubuntu/.nvm/versions/node/v24.15.0/bin
+            export PATH="$PNPM_HOME:$NODE_BIN_DIR:$PATH"
 
             REPO_DIR="$HOME/Storra"
             BACKEND_DIR="$REPO_DIR/Backend"
