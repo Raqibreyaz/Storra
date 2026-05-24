@@ -1,0 +1,73 @@
+name: Backend Deploy Workflow
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REPO_DIR: "$HOME/Storra"
+  BACKEND_DIR: "$HOME/Storra/Backend"
+  SSH_KEY_PATH: "$HOME/.ssh/instance-key-pair.pem"
+  SSH_HOST: "storra-backend.servehttp.com"
+  SSH_USER: "ubuntu"
+
+jobs:
+  job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout  
+        uses: actions/checkout@v5
+        with:
+            fetch-depth: '0'
+      - name: Detect Changed Paths
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            backend:
+                - 'Backend/**'
+            deps:
+                - 'Backend/package.json'
+                - 'Backend/pnpm-lock.yaml'
+
+    # Skip everything if no backend files changed
+      - name: No backend changes — skipping deployment
+        if: steps.filter.outputs.backend == 'false'
+        run: |
+          echo "No changes detected in Backend/. Skipping deployment."
+          exit 0
+
+      - name: Save the SSH key
+        if: steps.filter.outputs.backend == 'true'
+        run: |
+            mkdir -p ~/.ssh
+            echo "Saving SSH Key..."
+            cat > "${{env.SSH_KEY_PATH}}" <<EOF
+            ${{secrets.AWS_INSTANCE_KEY_PAIR}}
+            EOF
+            chmod 600 ${{env.SSH_KEY_PATH}}
+
+      - name: SSH into backend server
+        if: steps.filter.outputs.backend == 'true'
+        run: | 
+            ssh -o StrictHostKeyChecking=no -i "${{env.SSH_KEY_PATH}}" ubuntu@storra-backend.servehttp.com <<EOF
+            
+            set -e
+
+            cd "${{env.REPO_DIR}}"
+            
+            echo "Pulling Latest changes from Github..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            if [ "${{steps.filter.outputs.deps}}" = "true" ]; then
+                echo "Installing new Dependencies..."
+                cd "${{env.BACKEND_DIR}}"
+                pnpm install --frozen-lockfile
+                cd "${{env.REPO_DIR}}"
+            fi
+
+            pm2 reload storraBackend --update-env 
+            echo "Server deloyed Successfully."
+
+            EOF
