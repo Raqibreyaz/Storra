@@ -12,7 +12,6 @@ import itemRoutes from "./src/routes/item.route.js";
 import subscriptionRoutes from "./src/routes/subscription.route.js";
 import planRoutes from "./src/routes/plan.route.js";
 import appSettingRoutes from "./src/routes/appSetting.route.js";
-import deployRoutes from "./src/routes/deploy.route.js";
 import checkAuthentication from "./src/middlewares/authenticate.middleware.js";
 import { globalErrorHandler } from "./src/middlewares/errorHandler.middleware.js";
 import { globalLimiter } from "./src/middlewares/rateLimiter.middleware.js";
