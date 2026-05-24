@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch: 
 
 env:
   REPO_DIR: "$HOME/Storra"
@@ -31,14 +32,14 @@ jobs:
                 - 'Backend/pnpm-lock.yaml'
 
     # Skip everything if no backend files changed
-      - name: No backend changes — skipping deployment
-        if: steps.filter.outputs.backend == 'false'
-        run: |
-          echo "No changes detected in Backend/. Skipping deployment."
-          exit 0
+      # - name: No backend changes — skipping deployment
+      #   if: steps.filter.outputs.backend == 'false'
+      #   run: |
+      #     echo "No changes detected in Backend/. Skipping deployment."
+      #     exit 0
 
       - name: Save the SSH key
-        if: steps.filter.outputs.backend == 'true'
+        # if: steps.filter.outputs.backend == 'true'
         run: |
             mkdir -p ~/.ssh
             echo "Saving SSH Key..."
@@ -48,7 +49,7 @@ jobs:
             chmod 600 ${{env.SSH_KEY_PATH}}
 
       - name: SSH into backend server
-        if: steps.filter.outputs.backend == 'true'
+        # if: steps.filter.outputs.backend == 'true'
         run: | 
             ssh -o StrictHostKeyChecking=no -i "${{env.SSH_KEY_PATH}}" ubuntu@storra-backend.servehttp.com <<EOF
             
