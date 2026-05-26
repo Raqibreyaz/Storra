@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -64,6 +64,10 @@ app.use("/item", checkAuthentication, itemRoutes);
 app.use("/app-setting", checkAuthentication, appSettingRoutes);
 app.use("/plans", planRoutes);
 app.use("/auth", authRoutes);
+
+app.get("/health", (req, res) =>
+  res.json({ message: "Server working as expected!" }),
+);
 
 // global error handler — consistent { error, errorCode } response
 app.use(globalErrorHandler);
