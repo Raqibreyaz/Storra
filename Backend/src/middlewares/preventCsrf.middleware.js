@@ -16,7 +16,8 @@ const preventCsrf = (req, res, next) => {
   if (
     csrfHeader ||
     req.url.includes("/subscriptions/events") ||
-    req.url.includes("/deploy/events")
+    req.url.includes("/deploy/events") ||
+    req.url.includes('/health')
   ) {
     return next();
   }
