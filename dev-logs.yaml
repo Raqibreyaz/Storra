@@ -186,5 +186,8 @@ issues:
   - fix: run the bash child process in detached mode, remove stdio connection and stop parent to wait for child, so child can run independently, stdout/stderr/stdin they become null in this case
   - note: the issue is still not fixed
 
+  - issue: .env file was not getting read by dotenv even it was present at the project level, causing the app to crash or behave unexpectedly
+  - fix: dotnev by default uses, path.resolve(process.cwd(),'.env'), which may fail in case the server is started from an external directory
+
 LOGS:  
   - i found a very interesting bug while uploading file to s3, actually i used mongodb id as s3 object key, so instead of id.toString() i did String(id) and behavior is different, String(id) even added double quotes in the objectKey, means s3 object with quoted name but when i did .toString then all things worked expectedly
