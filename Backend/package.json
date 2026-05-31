@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=.env app.js",
-    "start": "node --env-file-if-exists=.env app.js",
+    "dev": "node --watch app.js",
+    "start": "node app.js",
     "setup": "node --env-file-if-exists=.env scripts/setup.js"
   },
   "keywords": [],
