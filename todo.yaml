@@ -1,7 +1,6 @@
 TODO:
   ISSUES:
     - improving blockFileUploadOnInactiveSubscription and fixing bugs
-    - replace sending email of deployment with telegram chat message
     - adding subscription pause functionality in frontend
     - remove the manager role for now
     - creating separate pages instead of section in the admin dashboard

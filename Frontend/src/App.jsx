@@ -51,6 +51,10 @@ const router = createBrowserRouter([
     element: <AdminDashboard />,
   },
   {
+    path: "/app/admin/:section",
+    element: <AdminDashboard />,
+  },
+  {
     path: "/app/shared",
     element: <SharedWithMePage />,
   },

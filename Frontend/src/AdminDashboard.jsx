@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { 
   FaArrowLeft, 
@@ -20,7 +20,8 @@ const ALLOWED_ROLES = ["Owner", "Admin", "Manager"];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const { section } = useParams();
+  const activeTab = section || "overview";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { data: currentUser, isLoading } = useQuery({
@@ -104,7 +105,7 @@ export default function AdminDashboard() {
               <button
                 key={tab.id}
                 onClick={() => {
-                  setActiveTab(tab.id);
+                  navigate(`/app/admin/${tab.id}`);
                   setIsSidebarOpen(false);
                 }}
                 className={`
