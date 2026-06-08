@@ -6,7 +6,7 @@ import File from "../models/file.model.js";
 import { bulkDeleteItemsService } from "../services/item.service.js";
 
 export const bulkDelete = async (req, res, next) => {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const selectedDirIds = (req.body.selectedDirs || []).map(
     (id) => new ObjectId(id),
   );

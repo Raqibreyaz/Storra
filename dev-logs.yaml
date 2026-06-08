@@ -186,6 +186,9 @@ issues:
   - fix: run the bash child process in detached mode, remove stdio connection and stop parent to wait for child, so child can run independently, stdout/stderr/stdin they become null in this case
   - note: the issue is still not fixed
 
+  - issue: the app's soul purpose is Storra, so we dont need to make it deploy itself also
+  - fix: we build 'ShipIt' a custom ci/cd server for both frontend and backend project deployments, removing the hurdle of projects to self deploy itself
+
   - issue: .env file was not getting read by dotenv even it was present at the project level, causing the app to crash or behave unexpectedly
   - fix: dotnev by default uses, path.resolve(process.cwd(),'.env'), which may fail in case the server is started from an external directory, so made an static file to configure the env file path and import
 

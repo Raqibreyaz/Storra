@@ -6,7 +6,7 @@ import File from "../models/file.model.js";
 import { bulkDeleteItemsService } from "../services/item.service.js";
 
 export const getDirectoryContents = async (req, res, next) => {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const dirId = req.params.dirId;
 
   // find the directory in user's dirsDB or assign user's root directory
@@ -19,7 +19,7 @@ export const getDirectoryContents = async (req, res, next) => {
         .populate("path", "name")
         .select("-user -__v")
         .lean();
-  if (!dir) throw new ApiError(404, "Directory not found!","DIR_NOT_FOUND");
+  if (!dir) throw new ApiError(404, "Directory not found!", "DIR_NOT_FOUND");
 
   // get all files where parent is 'dir'
   const files = await File.find({
@@ -40,7 +40,7 @@ export const getDirectoryContents = async (req, res, next) => {
 };
 
 export const createDirectory = async (req, res, next) => {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const dirname = req.body.dirname;
   const parentDirId = req.params.parentDirId;
 
@@ -48,10 +48,7 @@ export const createDirectory = async (req, res, next) => {
     ? await Directory.findOne({ user: userId, _id: parentDirId }).lean()
     : await Directory.findOne({ user: userId, parentDir: null }).lean();
   if (!parentDir)
-    throw new ApiError(
-      404,
-      "Given Parent directory doesn't exist!"
-    );
+    throw new ApiError(404, "Given Parent directory doesn't exist!");
 
   // check if a file with that name already exists in that directory
   const directoryAlreadyExist = !!(await Directory.exists({
@@ -62,7 +59,7 @@ export const createDirectory = async (req, res, next) => {
   if (directoryAlreadyExist)
     throw new ApiError(
       400,
-      "A directory with this name already exist in this level!"
+      "A directory with this name already exist in this level!",
     );
 
   const dirPath = [...parentDir.path, parentDir._id];
@@ -80,13 +77,12 @@ export const createDirectory = async (req, res, next) => {
 };
 
 export const updateDirectoryName = async (req, res, next) => {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const dirId = req.params.dirId;
   const newDirname = req.body.newDirname;
 
   const directory = await Directory.findOne({ _id: dirId, user: userId });
-  if (!directory)
-    throw new ApiError(404, "Directory doesn't exist!");
+  if (!directory) throw new ApiError(404, "Directory doesn't exist!");
 
   // check if a directory with that name already exists in that directory
   const duplicate = await Directory.exists({
@@ -107,12 +103,11 @@ export const updateDirectoryName = async (req, res, next) => {
 };
 
 export const deleteDirectory = async (req, res, next) => {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const dirId = req.params.dirId;
 
   const currDir = await Directory.findOne({ _id: dirId, user: userId }).lean();
-  if (!currDir)
-    throw new ApiError(404, "Directory doesn't exist!");
+  if (!currDir) throw new ApiError(404, "Directory doesn't exist!");
 
   // remove all the files and sub-dirs of sub-dir
   // remove all the files and sub directories of the directory
@@ -122,7 +117,7 @@ export const deleteDirectory = async (req, res, next) => {
 };
 
 export const countDescendantDirsAndFiles = async (req, res, next) => {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const dirId = new ObjectId(req.params.dirId);
 
   const descendantDirs = await Directory.find({ path: dirId, user: userId })

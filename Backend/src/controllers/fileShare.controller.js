@@ -5,7 +5,7 @@ import ApiError from "../helpers/apiError.js";
 
 
 export const filesSharedWithMe = async (req, res, next) => {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const sharedFiles = await FileShare.find({ user: userId })
     .populate("file", "name size") //only select name,size from file
     .select("permission -_id")

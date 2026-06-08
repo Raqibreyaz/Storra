@@ -14,28 +14,33 @@ import {
 } from "../services/razorpay.service.js";
 
 export const getUser = async (req, res, next) => {
-  const directory = await Directory.findById(req.session.user.storageDir)
+  const userId = req.loggedInUser.userId;
+
+  const user = await User.findById(userId).lean();
+  const directory = await Directory.findById(user.storageDir)
     .select("-_id size")
     .lean();
 
   res.status(200).json({
-    name: req.session.user.name,
-    email: req.session.user.email,
-    picture: req.session.user.picture,
-    role: req.session.user.role,
-    maxStorageInBytes: req.session.user.maxStorageInBytes,
+    name: user.name,
+    email: user.email,
+    picture: user.picture,
+    role: user.role,
+    maxStorageInBytes: user.maxStorageInBytes,
     usedStorageInBytes: directory.size,
-    authProvider: req.session.user.authProvider,
+    authProvider: user.authProvider,
   });
 };
 
 // delete user either soft/hard
 export const deleteUser = async (req, res, next) => {
   const { userId } = req.params;
+  const loggedInUserId = req.loggedInUser.userId;
+
   const isPermanent =
     req.body?.permanent === "true" || req.body?.permanent === true;
 
-  if (req.session.user._id.equals(userId))
+  if (loggedInUserId === userId)
     throw new ApiError(400, "You cant delete yourself!");
 
   const user = await User.findOne({ _id: userId })
@@ -117,9 +122,10 @@ export const deleteUser = async (req, res, next) => {
 // fetch all users(maybe soft deleted ones too!)
 export const getAllUsers = async (req, res, next) => {
   const filter = {};
+  const loggedInUserRole = req.loggedInUser.role;
 
   // only owner will see the soft deleted users
-  if (req.session.user.role !== "Owner") filter.isDeleted = { $ne: true };
+  if (loggedInUserRole !== "Owner") filter.isDeleted = { $ne: true };
 
   const users = await User.find(filter)
     .select(
@@ -139,7 +145,9 @@ export const getAllUsers = async (req, res, next) => {
 
 // delete session and revoke the cookie
 export const logoutUser = async (req, res, next) => {
-  await Session.deleteOne({ _id: req.session.sessionId });
+  const loggedInUserId = req.loggedInUser.userId;
+
+  await Session.deleteOne({ user: loggedInUserId });
   res.clearCookie("authToken").status(204).end();
 };
 
@@ -151,7 +159,9 @@ export const forceLogout = async (req, res, next) => {
 
 // delete all sessions
 export const logoutUserFromAllDevices = async (req, res, next) => {
-  await Session.deleteMany({ user: req.session.user._id });
+  const loggedInUserId = req.loggedInUser.userId;
+
+  await Session.deleteMany({ user: loggedInUserId });
   res.clearCookie("authToken").status(204).end();
 };
 
@@ -170,8 +180,9 @@ export const recoverUser = async (req, res, next) => {
 export const changeUserRole = async (req, res, next) => {
   const { userId } = req.params;
   const { role } = req.body;
+  const loggedInUserId = req.loggedInUser.userId;
 
-  if (req.session.user._id.equals(userId))
+  if (loggedInUserId === userId)
     throw new ApiError(400, `You can't change your own role!`);
 
   const result = await User.updateOne({ _id: userId }, { $set: { role } });

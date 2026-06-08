@@ -15,12 +15,13 @@ import mongoose from "mongoose";
 import * as razorpayService from "../services/razorpay.service.js";
 
 export const createSubscription = async (req, res) => {
-  const user = req.session.user;
   const { planKey } = req.body;
 
   const plan = getPlanByKey(planKey);
   const totalBillingCycles = getTotalBillingCycles(planKey);
 
+  const userId = req.loggedInUser.userId;
+  const user = await User.findById(userId).lean();
   const fetchedSubscription = user.subscription
     ? await Subscription.findById(user.subscription)
     : null;
@@ -85,7 +86,10 @@ export const createSubscription = async (req, res) => {
 };
 
 export const getSubscription = async (req, res) => {
-  const subscriptionId = req.session.user.subscription;
+  const userId = req.loggedInUser.userId;
+  const user = await User.findById(userId).lean();
+  const subscriptionId = user.subscription;
+
   if (!subscriptionId) {
     const freePlan = getPlanByKey(PLAN_KEYS.FREE);
     return res.json({
@@ -128,7 +132,9 @@ export const getSubscription = async (req, res) => {
 };
 
 export const cancelSubscription = async (req, res) => {
-  const subscriptionId = req.session.user.subscription;
+  const userId = req.loggedInUser.userId;
+  const user = await User.findById(userId).lean();
+  const subscriptionId = user.subscription;
   if (!subscriptionId)
     throw new ApiError(400, "User doesn't have any subscription yet!");
 
@@ -161,13 +167,14 @@ export const cancelSubscription = async (req, res) => {
 };
 
 export const updateSubscription = async (req, res) => {
-  const rootDirId = req.session.user.storageDir;
+  const userId = req.loggedInUser.userId;
+  const user = await User.findById(userId).lean();
 
   const { planKey } = req.body;
   const plan = getPlanByKey(planKey);
   if (!plan) throw new ApiError(400, "Invalid Plan Key received!");
 
-  const storedSubscriptionId = req.session.user.subscription;
+  const storedSubscriptionId = user.subscription;
   if (!storedSubscriptionId)
     throw new ApiError(400, "No subscription exist to be updated!");
 
@@ -187,7 +194,9 @@ export const updateSubscription = async (req, res) => {
     );
 
   // user can't downgrade if consumed space is more than chosen plans capacity
-  const { size: consumedSpace } = await Directory.findById(rootDirId).lean();
+  const { size: consumedSpace } = await Directory.findById(
+    user.storageDir,
+  ).lean();
   if (plan.storageQuotaBytes < consumedSpace)
     throw new ApiError(
       400,

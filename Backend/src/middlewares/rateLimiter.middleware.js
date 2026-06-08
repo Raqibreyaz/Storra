@@ -7,7 +7,7 @@ import { RATE_LIMIT_PRESETS } from "../config/rateLimit.config.js";
 
 /** Authenticated routes: identify by user-id, fall back to IP */
 export const userKeyGenerator = (req) =>
-  req.session?.user?._id?.toString() || ipKeyGenerator(req.ip);
+  req.loggedInUser.userId || ipKeyGenerator(req.ip);
 
 /** Pre-auth routes (login, register, OTP): identify by IP only */
 export const ipOnlyKeyGenerator = (req) => ipKeyGenerator(req.ip);
@@ -57,7 +57,8 @@ export const applyRateLimit = (presetName) => {
   }
 
   const { limit, windowMin, identifyBy } = preset;
-  const keyGenerator = identifyBy === "ip" ? ipOnlyKeyGenerator : userKeyGenerator;
+  const keyGenerator =
+    identifyBy === "ip" ? ipOnlyKeyGenerator : userKeyGenerator;
 
   return createLimiter({
     windowMs: windowMin * 60 * 1000,
@@ -67,4 +68,3 @@ export const applyRateLimit = (presetName) => {
     keyGenerator,
   });
 };
-

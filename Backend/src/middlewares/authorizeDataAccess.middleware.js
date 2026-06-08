@@ -4,12 +4,14 @@ can this logged-in user access another user's account data?
 
 import ApiError from "../helpers/apiError.js";
 import Role from "../constants/role.js";
-
+import User from "../models/user.model.js";
 
 export default async function authorizeDataAccess(req, res, next) {
   const targetUserId = req.params.userId;
-  const loggedInUserId = req.session.user._id.toString();
-  const loggedInUserRole = req.session.user.role;
+  const loggedInUserId = req.loggedInUser.userId;
+
+  const user = User.findById(loggedInUserId).select("role").lean();
+  const loggedInUserRole = user.role;
 
   req.targetUserId = targetUserId || loggedInUserId;
 

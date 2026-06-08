@@ -7,10 +7,9 @@ import ApiError from "../helpers/apiError.js";
 import File from "../models/file.model.js";
 import FileShare from "../models/fileShare.model.js";
 
-
 export default async function checkFileAccessAllowed(req, res, next) {
   const fileId = req.params.fileId;
-  const loggedInUserId = req.session.user._id.toString();
+  const loggedInUserId = req.loggedInUser.userId;
 
   const file = await File.findById(fileId).lean();
   if (!file) throw new ApiError(404, "File not found!");

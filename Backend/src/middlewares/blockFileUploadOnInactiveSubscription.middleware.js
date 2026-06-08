@@ -7,7 +7,7 @@ export default async function blockFileUploadOnInactiveSubscription(
   res,
   next,
 ) {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const subscription = await Subscription.findOne({ user: userId }).lean();
   if (
     subscription?.razorpaySubscriptionId &&

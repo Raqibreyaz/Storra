@@ -57,7 +57,7 @@ export const initiateFileUpload = async (req, res, next) => {
     process.env.MAX_FILE_SIZE_LIMIT || 50 * 1024 * 1024,
   );
 
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const parentDirId = req.params.parentDirId;
   const fileSize = req.body.fileSize;
   const fileType = req.body.fileType || "application/octet-stream";
@@ -135,7 +135,7 @@ export const initiateFileUpload = async (req, res, next) => {
 };
 
 export const cancelFileUpload = async (req, res, next) => {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const fileId = req.params.fileId;
 
   const file = await File.findOne({ _id: fileId, user: userId });
@@ -151,7 +151,7 @@ export const cancelFileUpload = async (req, res, next) => {
 };
 
 export const completeFileUpload = async (req, res, next) => {
-  const userId = req.targetUserId || req.session.user._id.toString();
+  const userId = req.targetUserId || req.loggedInUser.userId;
   const fileId = req.params.fileId;
 
   const file = await File.findOne({ _id: fileId, user: userId });
