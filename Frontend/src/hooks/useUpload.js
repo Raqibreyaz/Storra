@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { uploadFile } from "../api/file.js";
 
-export default function useUpload(dirId, onUploadSuccess) {
+export default function useUpload(dirId, onUploadSuccess, targetUserId) {
   const [uploadingFile, setUploadingFile] = useState(null);
   const [uploadError, setUploadError] = useState("");
   const [progress, setProgress] = useState(0);
@@ -44,10 +44,11 @@ export default function useUpload(dirId, onUploadSuccess) {
           abortRef.current = null;
           setUploadError(errMsg);
         },
+        targetUserId,
       });
       abortRef.current = abort;
     },
-    [dirId, onUploadSuccess],
+    [dirId, onUploadSuccess, targetUserId],
   );
 
   const cancelUpload = useCallback(() => {

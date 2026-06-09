@@ -13,7 +13,7 @@ import {
     FaArrowDown,
     FaCreditCard,
 } from "react-icons/fa";
-import { createSubscription, getPlans, getSubscription, updateSubscription } from "./api/plan.js";
+import { createSubscription, getPlans, getSubscription, updateSubscription, pauseSubscription, resumeSubscription } from "./api/plan.js";
 
 const PLAN_FEATURES = {
     Free: [
@@ -185,6 +185,13 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
                     variant: "disabled",
                 };
             }
+            // Check for pause/resume states
+            if (currentSubscription?.status === "paused") {
+                return { label: "Resume", disabled: false, action: "resume", variant: "default" };
+            }
+            if (currentSubscription?.status === "active") {
+                return { label: "Pause", disabled: false, action: "pause", variant: "default" };
+            }
             // Compare storage to decide upgrade vs downgrade
             const currentStorage = currentSubscription.storageQuotaBytes || 0;
             const isUpgrade = plan.storageBytes > currentStorage || activeVariant.priceInPaise > currentSubscription.priceInPaise;
@@ -204,7 +211,6 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
         mutationKey: ["subscribe"],
         mutationFn: createSubscription,
     });
-
     const updateMutation = useMutation({
         mutationKey: ["updateSubscription"],
         mutationFn: updateSubscription,
@@ -212,6 +218,14 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
             onPostPayment?.();
             navigate("/app/dashboard");
         },
+    });
+    const pauseMutation = useMutation({
+        mutationKey: ["pauseSubscription"],
+        mutationFn: pauseSubscription,
+    });
+    const resumeMutation = useMutation({
+        mutationKey: ["resumeSubscription"],
+        mutationFn: resumeSubscription,
     });
 
     const onSubscribe = async () => {
@@ -252,12 +266,20 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
             if (confirm(`Are you sure you want to ${buttonConfig.label.toLowerCase()} to the ${name} plan?`)) {
                 updateMutation.mutate(activeVariant.planKey);
             }
+        } else if (buttonConfig.action === "pause") {
+            if (confirm("Are you sure you want to pause your subscription?")) {
+                pauseMutation.mutate();
+            }
+        } else if (buttonConfig.action === "resume") {
+            if (confirm("Do you want to resume your subscription now?")) {
+                resumeMutation.mutate();
+            }
         } else if (buttonConfig.action === "navigate") {
             navigate("/app");
         }
     };
 
-    const isButtonLoading = subscriptionMutation.isPending || updateMutation.isPending;
+    const isButtonLoading = subscriptionMutation.isPending || updateMutation.isPending || pauseMutation.isPending || resumeMutation.isPending;
 
     return (
         <div

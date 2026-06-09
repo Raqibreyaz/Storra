@@ -1,11 +1,11 @@
 import { apiGet, apiPost, apiPatch, apiDelete } from "./client.js";
 
-export const getDirectory = (dirId) => apiGet(`/directory/${dirId || ""}`);
+export const getDirectory = (dirId, targetUserId) => apiGet(`/directory/${targetUserId ? targetUserId + '/' : ''}${dirId || ""}`);
 
-export const createDirectory = (parentDirId, dirname) => apiPost(`/directory/${parentDirId ?? ""}`, { dirname });
+export const createDirectory = (parentDirId, dirname, targetUserId) => apiPost(`/directory/${targetUserId ? targetUserId + '/' : ''}${parentDirId ?? ""}`, { dirname });
 
-export const deleteDirectory = (dirId) => apiDelete(`/directory/${dirId}`);
+export const deleteDirectory = (dirId, targetUserId) => apiDelete(`/directory/${targetUserId ? targetUserId + '/' : ''}${dirId}`);
 
-export const renameDirectory = (dirId, newDirname) => apiPatch(`/directory/${dirId}`, { newDirname });
+export const renameDirectory = (dirId, newDirname, targetUserId) => apiPatch(`/directory/${targetUserId ? targetUserId + '/' : ''}${dirId}`, { newDirname });
 
 export const getDirectoryCounts = (dirId) => apiGet(`/directory/${dirId}/descendants/count`);

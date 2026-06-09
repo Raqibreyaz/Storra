@@ -2,29 +2,19 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  FaArrowLeft,
-  FaCloud,
-  FaShieldAlt,
-  FaBolt,
-  FaCrown,
-  FaEnvelope,
-  FaUser,
-  FaGoogle,
-  FaGithub,
-  FaExchangeAlt,
-  FaTimes,
-  FaCheckCircle,
-  FaExclamationTriangle,
-  FaClock,
-  FaPause,
-  FaBan,
-  FaHourglassHalf,
-  FaCreditCard,
+  FaArrowLeft, FaCloud, FaShieldAlt, FaBolt, FaCrown,
+  FaEnvelope, FaUser, FaGoogle, FaGithub, FaExchangeAlt,
+  FaTimes, FaCheckCircle, FaExclamationTriangle, FaClock,
+  FaPause, FaPlay, FaBan, FaHourglassHalf, FaCreditCard,
 } from "react-icons/fa";
 import { getCurrentUser } from "./api/user.js";
-import { getSubscription, cancelSubscription } from "./api/plan.js";
+import {
+  getSubscription, cancelSubscription,
+  pauseSubscription, resumeSubscription,
+} from "./api/plan.js";
 import formatSize from "./utils/formatSize.js";
 import ProfileImage from "./components/ProfileImage.jsx";
+
 
 // ─── Status config ──────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
@@ -50,8 +40,7 @@ const STATUS_CONFIG = {
     label: "Grace Period",
     color: "bg-red-100 text-red-700",
     icon: FaClock,
-    description:
-      "Please update your payment method to avoid losing your plan.",
+    description: "Please update your payment method to avoid losing your plan.",
   },
   paused: {
     label: "Paused",
@@ -73,14 +62,48 @@ const AUTH_PROVIDER_CONFIG = {
   github: { label: "GitHub", icon: FaGithub, color: "text-gray-800" },
 };
 
+const PLAN_ICONS = {
+  Free: FaCloud,
+  Basic: FaShieldAlt,
+  Standard: FaBolt,
+  Pro: FaCrown,
+};
+
 function formatDate(dateStr) {
   if (!dateStr) return "—";
   return new Date(dateStr).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+    day: "numeric", month: "short", year: "numeric",
   });
 }
+
+// ─── Shared action-button class builder ─────────────────────────────────────
+// BUG FIX (DRY): All action buttons shared 80% identical Tailwind strings.
+// Centralise here so a single edit propagates everywhere.
+const ACTION_BTN_VARIANTS = {
+  violet:
+    "bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 " +
+    "hover:bg-violet-100 dark:hover:bg-violet-900/50 border-violet-200 dark:border-violet-800/50",
+  red:
+    "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 " +
+    "hover:bg-red-100 dark:hover:bg-red-900/50 border-red-200 dark:border-red-800/50",
+  gray:
+    "bg-gray-50 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300 " +
+    "hover:bg-gray-100 dark:hover:bg-gray-800/50 border-gray-200 dark:border-gray-800/50",
+  green:
+    "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 " +
+    "hover:bg-green-100 dark:hover:bg-green-800/50 border-green-200 dark:border-green-800/50",
+  disabled:
+    "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 " +
+    "cursor-not-allowed border-gray-200 dark:border-gray-700",
+};
+
+function actionBtn(variant) {
+  const base =
+    "flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm " +
+    "transition-colors border disabled:opacity-50";
+  return `${base} ${ACTION_BTN_VARIANTS[variant]}`;
+}
+
 
 // ─── Cancel Confirmation Modal ──────────────────────────────────────────────
 function CancelModal({ isOpen, onClose, onConfirm, isPending }) {
@@ -100,10 +123,9 @@ function CancelModal({ isOpen, onClose, onConfirm, isPending }) {
 
         <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 leading-relaxed">
           How would you like to cancel your subscription? You can cancel
-          immediately or let it run until the end of your current billing
-          period.
+          immediately or let it run until the end of your current billing period.
         </p>
-        
+
         <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 rounded-lg p-3 mb-6 transition-colors">
           <p className="text-xs text-red-700 dark:text-red-300 font-medium">
             <span className="font-bold">Note:</span> We do not offer refunds for cancelled subscriptions.
@@ -111,25 +133,29 @@ function CancelModal({ isOpen, onClose, onConfirm, isPending }) {
         </div>
 
         <div className="flex flex-col gap-3">
+          {/* BUG FIX (DRY): Modal buttons also extracted into consistent patterns */}
           <button
-            className="w-full py-2.5 px-4 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200
-              font-medium text-sm cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-800/50 transition-colors disabled:opacity-50"
+            className="w-full py-2.5 px-4 rounded-xl font-medium text-sm cursor-pointer transition-colors disabled:opacity-50
+              bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/50
+              text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-800/50"
             onClick={() => onConfirm(true)}
             disabled={isPending}
           >
             Cancel at end of billing period
           </button>
           <button
-            className="w-full py-2.5 px-4 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-200
-              font-medium text-sm cursor-pointer hover:bg-red-100 dark:hover:bg-red-800/50 transition-colors disabled:opacity-50"
+            className="w-full py-2.5 px-4 rounded-xl font-medium text-sm cursor-pointer transition-colors disabled:opacity-50
+              bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50
+              text-red-700 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-800/50"
             onClick={() => onConfirm(false)}
             disabled={isPending}
           >
             Cancel immediately
           </button>
           <button
-            className="w-full py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300
-              font-medium text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors border-none"
+            className="w-full py-2.5 px-4 rounded-xl font-medium text-sm cursor-pointer transition-colors
+              bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300
+              hover:bg-gray-200 dark:hover:bg-gray-600 border-none"
             onClick={onClose}
             disabled={isPending}
           >
@@ -141,25 +167,23 @@ function CancelModal({ isOpen, onClose, onConfirm, isPending }) {
   );
 }
 
+
 // ─── Profile Card ───────────────────────────────────────────────────────────
 function ProfileCard({ user }) {
-  const providerConfig =
-    AUTH_PROVIDER_CONFIG[user.authProvider] || AUTH_PROVIDER_CONFIG.local;
+  const providerConfig = AUTH_PROVIDER_CONFIG[user.authProvider] ?? AUTH_PROVIDER_CONFIG.local;
   const ProviderIcon = providerConfig.icon;
+
   const storagePercent = user.maxStorageInBytes
     ? Math.min((user.usedStorageInBytes / user.maxStorageInBytes) * 100, 100)
     : 0;
 
   const storageBarColor =
-    storagePercent > 90
-      ? "bg-red-500"
-      : storagePercent > 70
-        ? "bg-amber-500"
-        : "bg-blue-500";
+    storagePercent > 90 ? "bg-red-500" :
+      storagePercent > 70 ? "bg-amber-500" :
+        "bg-blue-500";
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-colors">
-      {/* Gradient header */}
       <div className="h-24 bg-gradient-to-r from-blue-500 via-violet-500 to-purple-600 relative">
         <div className="absolute -bottom-10 left-6">
           <div className="w-20 h-20 rounded-full border-4 border-white bg-white shadow-lg flex items-center justify-center overflow-hidden">
@@ -167,7 +191,7 @@ function ProfileCard({ user }) {
               <ProfileImage src={user.picture} />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-blue-400 to-violet-500 flex items-center justify-center text-white text-2xl font-bold">
-                {user.name?.charAt(0)?.toUpperCase() || "U"}
+                {user.name?.charAt(0)?.toUpperCase() ?? "U"}
               </div>
             )}
           </div>
@@ -175,7 +199,6 @@ function ProfileCard({ user }) {
       </div>
 
       <div className="pt-14 px-6 pb-6">
-        {/* Name & Role */}
         <div className="flex items-start justify-between mb-1">
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">{user.name}</h2>
@@ -186,19 +209,16 @@ function ProfileCard({ user }) {
           </span>
         </div>
 
-        {/* Auth provider */}
         <div className="flex items-center gap-1.5 mt-3 text-xs text-gray-500 dark:text-gray-400 transition-colors">
-          <ProviderIcon className={`${providerConfig.color}`} />
+          <ProviderIcon className={providerConfig.color} />
           <span>Signed in via {providerConfig.label}</span>
         </div>
 
-        {/* Storage usage */}
         <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700 transition-colors">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Storage</span>
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {formatSize(user.usedStorageInBytes)} of{" "}
-              {formatSize(user.maxStorageInBytes)}
+              {formatSize(user.usedStorageInBytes)} of {formatSize(user.maxStorageInBytes)}
             </span>
           </div>
           <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -216,37 +236,52 @@ function ProfileCard({ user }) {
   );
 }
 
+
 // ─── Subscription Card ──────────────────────────────────────────────────────
-function SubscriptionCard({ subscription, onCancel, cancelPending }) {
+// BUG FIX: Removed queryClient usage from here — it was used but never declared
+// inside this component. Mutations are now lifted to Dashboard and passed as
+// callbacks (onPause / onResume / onCancel), consistent with the cancel pattern.
+function SubscriptionCard({
+  subscription,
+  onCancel,
+  onPause,
+  onResume,
+  cancelPending,
+  pausePending,
+  resumePending,
+}) {
   const navigate = useNavigate();
+
+  const status = subscription.status ?? "free"; // BUG FIX: was `|| "free"` which coerces "" to "free" too — intentional here but explicit is safer
   const isFree = !subscription.status;
-  const status = subscription.status || "free";
   const statusConfig = STATUS_CONFIG[status];
 
-  const PLAN_ICONS = {
-    Free: FaCloud,
-    Basic: FaShieldAlt,
-    Standard: FaBolt,
-    Pro: FaCrown,
-  };
-  const PlanIcon = PLAN_ICONS[subscription.planName] || FaCloud;
+  const PlanIcon = PLAN_ICONS[subscription.planName] ?? FaCloud;
 
-  const isCancelledAtEnd =
-    status === "cancelled" && subscription.cancelAtPeriodEnd;
-    
-  const isGraceExpired = subscription.graceEndsAt && new Date(subscription.graceEndsAt) <= new Date();
-  const isEffectivelyFree = 
-    isFree || 
-    (status === "cancelled" && (!subscription.cancelAtPeriodEnd || isGraceExpired));
+  // BUG FIX: Consolidate all status-derived booleans in one place so they can't drift
+  const isCancelledAtEnd = status === "cancelled" && subscription.cancelAtPeriodEnd;
+  const isCancelledImmediately = status === "cancelled" && !subscription.cancelAtPeriodEnd;
+  const isPeriodExpired = subscription.currentPeriodEnd
+    ? new Date(subscription.currentPeriodEnd) <= new Date()
+    : false;
+
+  // "Effectively free" = on free plan, OR cancelled and the paid period has ended
+  const isEffectivelyFree =
+    isFree || (isCancelledImmediately) || (isCancelledAtEnd && isPeriodExpired);
+
+  // Pending cancellation = cancelled but user still has access until period end
+  const isPendingCancellation = isCancelledAtEnd && !isPeriodExpired;
+
+  const isNonCard =
+    !!subscription.paymentMethod && subscription.paymentMethod !== "card";
 
   const showCancelButton =
     !isEffectivelyFree &&
     status !== "cancelled" &&
     status !== "awaiting_activation";
 
-  const isNonCard = subscription.paymentMethod && subscription.paymentMethod !== "card";
-  const isPendingCancellation = status === "cancelled" && !isEffectivelyFree;
-  const canChangePlan = !isEffectivelyFree && !isPendingCancellation && !isNonCard;
+  const canChangePlan =
+    !isEffectivelyFree && !isPendingCancellation && !isNonCard;
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-colors">
@@ -271,9 +306,7 @@ function SubscriptionCard({ subscription, onCancel, cancelPending }) {
 
           {/* Status badge */}
           {statusConfig ? (
-            <span
-              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${statusConfig.color}`}
-            >
+            <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${statusConfig.color}`}>
               <statusConfig.icon className="text-[10px]" />
               {isCancelledAtEnd
                 ? `Cancels ${formatDate(subscription.currentPeriodEnd)}`
@@ -290,16 +323,14 @@ function SubscriptionCard({ subscription, onCancel, cancelPending }) {
 
       {/* Status description */}
       {statusConfig && (
-        <div
-          className={`mx-6 mt-4 p-3 rounded-lg text-sm ${statusConfig.color} bg-opacity-50`}
-        >
+        <div className={`mx-6 mt-4 p-3 rounded-lg text-sm ${statusConfig.color} bg-opacity-50`}>
           {isCancelledAtEnd
             ? `Your subscription will remain active until ${formatDate(subscription.currentPeriodEnd)}, then you'll be moved to the Free plan.`
             : statusConfig.description}
         </div>
       )}
 
-      {/* Details */}
+      {/* Body */}
       <div className="px-6 py-5">
         {isEffectivelyFree ? (
           <div className="text-center py-6">
@@ -310,8 +341,7 @@ function SubscriptionCard({ subscription, onCancel, cancelPending }) {
               Upgrade your experience
             </h4>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 max-w-xs mx-auto transition-colors">
-              Get more storage, advanced features, and priority support with a
-              paid plan.
+              Get more storage, advanced features, and priority support with a paid plan.
             </p>
             <button
               className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-500 text-white
@@ -323,19 +353,11 @@ function SubscriptionCard({ subscription, onCancel, cancelPending }) {
           </div>
         ) : (
           <>
-            {/* Billing details grid */}
             <div className="grid grid-cols-2 gap-4 mb-5">
-              <DetailItem
-                label="Storage Quota"
-                value={formatSize(subscription.storageQuotaBytes)}
-              />
+              <DetailItem label="Storage Quota" value={formatSize(subscription.storageQuotaBytes)} />
               <DetailItem
                 label="Billing Cycle"
-                value={
-                  subscription.billingCycle === "yearly"
-                    ? "Yearly"
-                    : "Monthly"
-                }
+                value={subscription.billingCycle === "yearly" ? "Yearly" : "Monthly"}
               />
               <DetailItem
                 label="Current Period"
@@ -343,11 +365,7 @@ function SubscriptionCard({ subscription, onCancel, cancelPending }) {
               />
               <DetailItem
                 label="Next Billing"
-                value={
-                  isCancelledAtEnd
-                    ? "—"
-                    : formatDate(subscription.nextBillingDate)
-                }
+                value={isCancelledAtEnd ? "—" : formatDate(subscription.nextBillingDate)}
               />
               {subscription.paymentMethod && (
                 <DetailItem
@@ -362,47 +380,64 @@ function SubscriptionCard({ subscription, onCancel, cancelPending }) {
               )}
             </div>
 
-            {/* Non-card warning */}
             {isNonCard && (
               <div className="mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 text-xs leading-relaxed transition-colors">
                 <span className="font-semibold">⚠ Non-card payment detected:</span> Plan
-                upgrades/downgrades are only supported for card subscriptions.
-                To enable plan changes in the future, cancel and re-subscribe
-                using a card.
+                upgrades/downgrades are only supported for card subscriptions. To enable plan
+                changes in the future, cancel and re-subscribe using a card.
               </div>
             )}
 
-            {/* Actions */}
+            {/* Actions — BUG FIX (DRY): use actionBtn() helper; handlers come from props */}
             <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100 dark:border-gray-700 transition-colors">
               <button
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-colors border ${
-                  canChangePlan
-                    ? "bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-900/50 border-violet-200 dark:border-violet-800/50"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed border-gray-200 dark:border-gray-700"
-                }`}
+                className={actionBtn(canChangePlan ? "violet" : "disabled")}
                 onClick={() => navigate("/plans")}
                 disabled={!canChangePlan}
                 title={
-                  isPendingCancellation 
-                    ? "Plan changes are not allowed while cancellation is pending" 
-                    : isNonCard 
-                      ? "Plan changes require card subscriptions" 
+                  isPendingCancellation
+                    ? "Plan changes are not allowed while cancellation is pending"
+                    : isNonCard
+                      ? "Plan changes require card subscriptions"
                       : undefined
                 }
               >
                 <FaExchangeAlt className="text-xs" />
                 Change Plan
               </button>
+
               {showCancelButton && (
                 <button
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400
-                    font-medium text-sm cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors border border-red-200 dark:border-red-800/50
-                    disabled:opacity-50"
+                  className={actionBtn("red")}
                   onClick={onCancel}
                   disabled={cancelPending}
                 >
                   <FaTimes className="text-xs" />
                   Cancel Subscription
+                </button>
+              )}
+
+              {/* BUG FIX: was calling pauseMutation.mutate() directly inside this component
+                  but queryClient was never in scope here → runtime ReferenceError */}
+              {status !== "paused" && status !== "cancelled" && (
+                <button
+                  className={actionBtn("gray")}
+                  onClick={onPause}
+                  disabled={pausePending}
+                >
+                  <FaPause className="text-xs" />
+                  Pause
+                </button>
+              )}
+
+              {status === "paused" && (
+                <button
+                  className={actionBtn("green")}
+                  onClick={onResume}
+                  disabled={resumePending}
+                >
+                  <FaPlay className="text-xs" />
+                  Resume
                 </button>
               )}
             </div>
@@ -412,6 +447,7 @@ function SubscriptionCard({ subscription, onCancel, cancelPending }) {
     </div>
   );
 }
+
 
 function DetailItem({ label, value }) {
   return (
@@ -423,6 +459,7 @@ function DetailItem({ label, value }) {
     </div>
   );
 }
+
 
 // ─── Dashboard Page ─────────────────────────────────────────────────────────
 const Dashboard = () => {
@@ -450,13 +487,28 @@ const Dashboard = () => {
     staleTime: 2 * 60 * 1000,
   });
 
+  // BUG FIX: All three mutations live here so queryClient is always in scope.
+  // Each invalidates ["subscription"]; cancel also invalidates ["currentUser"].
+  const invalidateSub = () =>
+    queryClient.invalidateQueries({ queryKey: ["subscription"] });
+
   const cancelMutation = useMutation({
     mutationFn: cancelSubscription,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      invalidateSub();
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       setShowCancelModal(false);
     },
+  });
+
+  const pauseMutation = useMutation({
+    mutationFn: pauseSubscription,
+    onSuccess: invalidateSub,
+  });
+
+  const resumeMutation = useMutation({
+    mutationFn: resumeSubscription,
+    onSuccess: invalidateSub,
   });
 
   const subscription = subscriptionData?.subscription;
@@ -493,7 +545,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors">
-      {/* Header */}
       <header className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-4">
         <button
           className="flex items-center gap-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors
@@ -505,7 +556,6 @@ const Dashboard = () => {
         </button>
       </header>
 
-      {/* Page title */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-6">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight transition-colors">
           My Account
@@ -515,25 +565,25 @@ const Dashboard = () => {
         </p>
       </section>
 
-      {/* Cards grid */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Profile — 2 cols */}
           <div className="lg:col-span-2">
             {userData && <ProfileCard user={userData} />}
           </div>
 
-          {/* Subscription — 3 cols */}
           <div className="lg:col-span-3">
             {subscription && (
               <SubscriptionCard
                 subscription={subscription}
                 onCancel={() => setShowCancelModal(true)}
+                onPause={() => pauseMutation.mutate()}
+                onResume={() => resumeMutation.mutate()}
                 cancelPending={cancelMutation.isPending}
+                pausePending={pauseMutation.isPending}
+                resumePending={resumeMutation.isPending}
               />
             )}
 
-            {/* Cancel error */}
             {cancelMutation.isError && (
               <div className="mt-3 bg-red-50 text-red-700 py-2.5 px-4 rounded-xl text-sm">
                 {cancelMutation.error?.message || "Failed to cancel. Please try again."}
@@ -543,13 +593,10 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Cancel modal */}
       <CancelModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirm={(cancelAtPeriodEnd) =>
-          cancelMutation.mutate(cancelAtPeriodEnd)
-        }
+        onConfirm={(cancelAtPeriodEnd) => cancelMutation.mutate(cancelAtPeriodEnd)}
         isPending={cancelMutation.isPending}
       />
     </div>

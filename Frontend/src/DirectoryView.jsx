@@ -19,14 +19,25 @@ import useContextMenu from "./hooks/useContextMenu";
 import useUpload from "./hooks/useUpload";
 
 function DirectoryView() {
-  const { dirId } = useParams();
+  const { dirId, targetUserId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
 
+  console.log(targetUserId)
+  console.log(dirId)
+
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: () => import("./api/user.js").then(m => m.getCurrentUser()),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const isReadOnlyAdmin = targetUserId && currentUser?.role === "Admin" && currentUser?._id !== targetUserId;
+
   const { data: directoryData, isLoading, error: queryError } = useQuery({
-    queryKey: ["directory", dirId || "root"],
-    queryFn: () => getDirectory(dirId),
+    queryKey: ["directory", targetUserId || "me", dirId || "root"],
+    queryFn: () => getDirectory(dirId, targetUserId),
     retry: false,
   });
 
@@ -36,7 +47,7 @@ function DirectoryView() {
   }, [queryError]);
 
   const invalidateDirectory = () => {
-    queryClient.invalidateQueries({ queryKey: ["directory", dirId || "root"] });
+    queryClient.invalidateQueries({ queryKey: ["directory", targetUserId || "me", dirId || "root"] });
   };
   const invalidateUser = () => {
     queryClient.invalidateQueries({ queryKey: ["currentUser"] });
@@ -48,7 +59,7 @@ function DirectoryView() {
   } = useUpload(dirId, () => {
     invalidateDirectory();
     invalidateUser();
-  });
+  }, targetUserId);
 
   const combinedItems = useMemo(() => [
     ...(uploadingFile ? [uploadingFile] : []),
@@ -75,7 +86,7 @@ function DirectoryView() {
 
   // Mutations
   const createDirMutation = useMutation({
-    mutationFn: (dirname) => createDirectory(dirId, dirname),
+    mutationFn: (dirname) => createDirectory(dirId, dirname, targetUserId),
     onSuccess: () => {
       invalidateDirectory();
       invalidateUser();
@@ -85,7 +96,7 @@ function DirectoryView() {
 
   const renameMutation = useMutation({
     mutationFn: ({ type, id, name }) =>
-      type === "file" ? renameFile(id, name) : renameDirectory(id, name),
+      type === "file" ? renameFile(id, name, targetUserId) : renameDirectory(id, name, targetUserId),
     onSuccess: () => {
       invalidateDirectory();
       invalidateUser();
@@ -95,7 +106,7 @@ function DirectoryView() {
 
   const deleteMutation = useMutation({
     mutationFn: ({ type, id }) =>
-      type === "file" ? deleteFile(id) : deleteDirectory(id),
+      type === "file" ? deleteFile(id, targetUserId) : deleteDirectory(id, targetUserId),
     onSuccess: () => {
       invalidateDirectory();
       invalidateUser();
@@ -113,9 +124,9 @@ function DirectoryView() {
 
   // Handlers
   const handleOpenItem = useCallback((type, id) => {
-    if (type === "directory") navigate(`/app/directory/${id}`);
-    else window.location.href = getFileUrl(id);
-  }, [navigate]);
+    if (type === "directory") navigate(targetUserId ? `/app/admin/users/${targetUserId}/directory/${id}` : `/app/directory/${id}`);
+    else window.location.href = getFileUrl(id, targetUserId);
+  }, [navigate, targetUserId]);
 
   // Keyboard shortcuts: Ctrl+A to select all, Escape to clear selection
   useEffect(() => {
@@ -174,7 +185,9 @@ function DirectoryView() {
     deleteMutation.error?.message ||
     bulkDeleteMutation.error?.message;
 
-  const directoryName = dirId ? directoryData?.name : "My Drive";
+  const isRoot = directoryData && !directoryData.parentDir;
+  const defaultDriveName = targetUserId ? "User's Drive" : "My Drive";
+  const directoryName = (!dirId || isRoot) ? defaultDriveName : directoryData?.name;
   const directoryPath = dirId && directoryData?.path ? directoryData.path : [];
 
   return (
@@ -186,11 +199,12 @@ function DirectoryView() {
       <DirectoryHeader
         directoryName={directoryName}
         directoryPath={directoryPath}
-        onCreateFolderClick={openCreateDir}
-        onUploadFilesClick={() => fileInputRef.current.click()}
+        onCreateFolderClick={!isReadOnlyAdmin ? openCreateDir : undefined}
+        onUploadFilesClick={!isReadOnlyAdmin ? () => fileInputRef.current.click() : undefined}
         fileInputRef={fileInputRef}
         handleFileSelect={handleFileSelect}
-        disabled={dirNotFound}
+        disabled={dirNotFound || isReadOnlyAdmin}
+        targetUserId={targetUserId}
       />
 
       {showCreateDir && (
@@ -261,12 +275,12 @@ function DirectoryView() {
           isUploading={isUploading}
           uploadProgress={progress}
           cancelUpload={cancelUpload}
-          handleDeleteFile={(id, name) => handleDeleteItem("file", id, name)}
-          handleDeleteDirectory={(id, name) => handleDeleteItem("directory", id, name)}
+          handleDeleteFile={!isReadOnlyAdmin ? (id, name) => handleDeleteItem("file", id, name) : undefined}
+          handleDeleteDirectory={!isReadOnlyAdmin ? (id, name) => handleDeleteItem("directory", id, name) : undefined}
           handleShowDetails={openDetails}
-          openRenameModal={openRename}
-          onShare={openShare}
-          onManageAccess={openAccess}
+          openRenameModal={!isReadOnlyAdmin ? openRename : undefined}
+          onShare={!isReadOnlyAdmin ? openShare : undefined}
+          onManageAccess={!isReadOnlyAdmin ? openAccess : undefined}
           selectedItems={selectedItems}
         />
       )}
@@ -275,7 +289,7 @@ function DirectoryView() {
         selectedCount={selectedCount}
         totalCount={combinedItems.length}
         onClear={clearSelection}
-        onDelete={handleBulkDelete}
+        onDelete={!isReadOnlyAdmin && !targetUserId ? handleBulkDelete : undefined}
         onSelectAll={toggleSelectAll}
       />
     </div>

@@ -7,16 +7,16 @@ import {
   ApiError,
 } from "./client.js";
 
-export const deleteFile = (fileId) => apiDelete(`/file/${fileId}`);
+export const deleteFile = (fileId, targetUserId) => apiDelete(`/file/${targetUserId ? targetUserId + '/' : ''}${fileId}`);
 
-export const renameFile = (fileId, newFilename) =>
-  apiPatch(`/file/rename/${fileId}`, { newFilename });
+export const renameFile = (fileId, newFilename, targetUserId) =>
+  apiPatch(`/file/rename/${targetUserId ? targetUserId + '/' : ''}${fileId}`, { newFilename });
 
-export const setFileAccess = (fileId, permission) =>
-  apiPatch(`/file/set-access/${fileId}`, { permission });
+export const setFileAccess = (fileId, permission, targetUserId) =>
+  apiPatch(`/file/set-access/${targetUserId ? targetUserId + '/' : ''}${fileId}`, { permission });
 
-export function getFileUrl(fileId) {
-  return `${BASE_URL}/file/${fileId}`;
+export function getFileUrl(fileId, targetUserId) {
+  return `${BASE_URL}/file/${targetUserId ? targetUserId + '/' : ''}${fileId}`;
 }
 
 /**
@@ -33,14 +33,14 @@ export function getFileUrl(fileId) {
  * @param {function}    opts.onError    - called with error message string on failure
  * @returns {{ abort: Function }}
  */
-export function uploadFile(dirId, file, { onProgress, onLoad, onError } = {}) {
+export function uploadFile(dirId, file, { onProgress, onLoad, onError, targetUserId } = {}) {
   const controller = new AbortController();
 
   (async () => {
     try {
       // Step 1: Initiate — get presigned URL from backend
       const { fileId, signedUrl } = await client.post(
-        `/file/initiate/${dirId ?? ""}`,
+        `/file/initiate/${targetUserId ? targetUserId + '/' : ''}${dirId ?? ""}`,
         { fileName: file.name, fileSize: file.size, fileType: file.type },
         { signal: controller.signal },
       );
@@ -86,7 +86,7 @@ export function uploadFile(dirId, file, { onProgress, onLoad, onError } = {}) {
 
       // Step 3: Confirm upload with backend
       await client.post(
-        `/file/complete/${fileId}`,
+        `/file/complete/${targetUserId ? targetUserId + '/' : ''}${fileId}`,
         {},
         {
           signal: controller.signal,
