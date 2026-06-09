@@ -6,12 +6,14 @@ import ApiError from "../helpers/apiError.js";
 import Role from "../constants/role.js";
 import User from "../models/user.model.js";
 
-export default async function authorizeDataAccess(req, res, next) {
+export default async function authorizeDataAccess(
+  req,
+  res,
+  next,
+) {
   const targetUserId = req.params.userId;
   const loggedInUserId = req.loggedInUser.userId;
-
-  const user = User.findById(loggedInUserId).select("role").lean();
-  const loggedInUserRole = user.role;
+  const loggedInUserRole = req.loggedInUser.role;
 
   req.targetUserId = targetUserId || loggedInUserId;
 

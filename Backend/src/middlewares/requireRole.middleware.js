@@ -1,6 +1,6 @@
 import ApiError from "../helpers/apiError.js";
 
-export default function allowOnlyTo(allowedUserRoles) {
+export default function requireRole(allowedUserRoles) {
   return (req, res, next) => {
     const loggedInUser = req.loggedInUser;
     if (allowedUserRoles.includes(loggedInUser.role)) return next();

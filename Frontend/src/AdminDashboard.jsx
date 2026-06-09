@@ -16,7 +16,7 @@ import OverviewSection from "./components/admin/OverviewSection";
 import UsersSection from "./components/admin/UsersSection";
 import SettingsSection from "./components/admin/SettingsSection";
 
-const ALLOWED_ROLES = ["Owner", "Admin", "Manager"];
+const ALLOWED_ROLES = ["Owner", "Admin"];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();

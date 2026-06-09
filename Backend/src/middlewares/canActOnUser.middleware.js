@@ -9,7 +9,7 @@ const Limits = Object.freeze(
   }, {}),
 );
 
-export default async function limitPrivileges(req, res, next) {
+export default async function canActOnUser(req, res, next) {
   const receivedUserId = req.params.userId;
   const role = req.body?.role;
   

@@ -1,29 +1,38 @@
 /*
+- does this file allowed globally to be viwed/edited?
 - does this file belongs to the logged-in user?
 - does this file shared with the logged-in user?
 */
 
+import Role from "../constants/role.js";
 import ApiError from "../helpers/apiError.js";
 import File from "../models/file.model.js";
 import FileShare from "../models/fileShare.model.js";
 
-export default async function checkFileAccessAllowed(req, res, next) {
+export default async function resolveFileAction(req, res, next) {
   const fileId = req.params.fileId;
-  const loggedInUserId = req.loggedInUser.userId;
+  const loggedInUserId = req.loggedInUser?.userId;
 
   const file = await File.findById(fileId).lean();
   if (!file) throw new ApiError(404, "File not found!");
 
   req.fileDoc = file;
 
-  // direct allow the file owner
-  if (file.user.equals(loggedInUserId)) return next();
-
   // allow the file viewer due to global allowance
   if (file.allowAnyoneAccess === "View" && req.method === "GET") return next();
 
   // allow the file editor due to global allowance
   if (file.allowAnyoneAccess === "Edit") return next();
+
+  // direct allow the file owner
+  if (file.user.equals(loggedInUserId)) return next();
+
+  // allow for app owner or admin(GET Access)
+  if (loggedInUserId) {
+    const loggedInUserRole = loggedInUser.role;
+    if (loggedInUserRole === Role.OWNER) return next();
+    if (loggedInUserRole === Role.ADMIN && req.method === "GET") return next();
+  }
 
   // find if the file shared to that user
   const fileShare = await FileShare.findOne({

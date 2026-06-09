@@ -9,7 +9,7 @@ import {
   completeFileUpload,
   cancelFileUpload,
 } from "../controllers/file.controller.js";
-import authorizeDataAccess from "../middlewares/authorizeDataAccess.middleware.js";
+import guardAdminDataOperation from "../middlewares/guardAdminDataOperation.js";
 import checkFileAccessAllowed from "../middlewares/checkFileAccess.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
 import {
@@ -76,7 +76,7 @@ router.post(
   "/initiate/:userId/{:parentDirId}",
   applyRateLimit("WRITE"),
   validate(initiateFileUploadSchema),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   blockFileUpload,
   blockFileUploadOnInactiveSubscription,
   initiateFileUpload,
@@ -84,7 +84,7 @@ router.post(
 router.post(
   "/complete/:userId/:fileId",
   applyRateLimit("WRITE"),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   completeFileUpload,
 );
 
@@ -92,7 +92,7 @@ router.get(
   "/:userId/:fileId",
   applyRateLimit("READ"),
   validate(getFileSchema),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   getFileContents,
 );
 
@@ -100,7 +100,7 @@ router.patch(
   "/rename/:userId/:fileId",
   applyRateLimit("MUTATE"),
   validate(renameFileSchema),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   renameFile,
 );
 
@@ -108,14 +108,14 @@ router.patch(
   "/set-access/:userId/:fileId",
   applyRateLimit("MUTATE"),
   validate(setAllowAnyoneSchema),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   setAllowAnyone,
 );
 
 router.delete(
   "/:userId/:fileId",
   applyRateLimit("MUTATE"),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   deleteFile,
 );
 

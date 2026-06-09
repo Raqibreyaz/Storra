@@ -8,6 +8,26 @@ features:
   - feature: multiple files and folder deletion
   - how: send the selected files and directories ids to backend separately which will delete them recursively
 
+  - feature: Implement Role-Based-Access-Control according to each role(owner,admin,user) across files and admin dashboard access
+  - how: 
+      - a privileged user can only alter info of lesser priviledged user, owner can promote/demote an admin while admin cant do this with owner but can do with a normal user
+      - admin can only suspend a user and read the files of users but can't unsuspend them or delete them
+      - owner can upload/delete/view/rename files or dirs of any user and can also unsuspend them
+      - a user can only view a file if:
+        - he is owner of the file
+        - he is owner of the app
+        - he is admin of the app
+        - file is shared to him with view/edit permissions
+      - a user can only rename a file if:
+        - he is owner of the file
+        - he is owner of the app
+        - file is shared to him with edit permissions
+      - for non-authenticated users, only allow file access if globally allowAnyone access for viewing/editing is configured corresponding to the request
+      - checkFileAccess(), checks if user can access/modify the file, covering all the cases
+      - authorizeDataAccess(), checks if user can access/modify that particular user's data across files/directories(only for owner,admin), covering all the cases
+      - limitPrivileges(), checks if user is allowed to alter a particular user's info, covers all cases
+      - allowOnlyTo(roles), allows only those given user roles
+
   - feature: uploading files directly to s3 from frontend
   - how: used presigned url with checks like file content-type + file-size so that user cant fake uploading a different file + size in place of what request to upload
 

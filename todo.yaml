@@ -1,26 +1,7 @@
-GOALS:
-    user: 
-      - a privileged user can only alter info of lesser priviledged user, owner can promote/demote an admin while admin cant do this with owner but can do with a normal user
-      - admin can only suspend a user and read the files of users but can't unsuspend them or delete them
-      - owner can upload/delete/view/rename files or dirs of any user and can also unsuspend them
-      - a user can only view a file if:
-        - he is owner of the file
-        - he is owner of the app
-        - he is admin of the app
-        - file is shared to him with view/edit permissions
-      - a user can only rename a file if:
-        - he is owner of the file
-        - he is owner of the app
-        - file is shared to him with edit permissions
 TODO:
   ISSUES:
-    - minimise size of request object by not adding too much data
-      - reduce user object(userId,subscriptionId,rootDirId,role)
-      - reduce appsettings etc.
-    - allow anyone file access for non-authenticated users too
     - check for code maintainability in overall codebase
     - code review for RBAC, subscription based file upload
-    - remove the manager role for now
     - improving blockFileUploadOnInactiveSubscription and fixing bugs
     - adding subscription pause functionality in frontend
     - centralizing duplicate code(like formatSize(bytes)) across the codebase
@@ -32,7 +13,6 @@ TODO:
       - created subscriptions
   
   FEATURE_REQUEST:
-    - for global file access, allow non-authenticated users also to access
     - import from google drive
     - toggling 2FA
     - any mechanism to get notified by s3 when user has successfully uploaded the file, so we dont need to wait for user to notify us of file upload completion
@@ -45,7 +25,7 @@ LATER:
         error: {
           code: 'BAD_REQUEST_ERROR',
           description: "Can't update subscription immediately when card mandate is applicable"
-        }
+    - allow anyone file access for non-authenticated users too
       }
   - Download as zip for both files and directories
   - sort by name,date,size etc.
@@ -53,7 +33,7 @@ LATER:
   - put user's files to glacier storage for low cost where needed
   - Move/copy files/directories from one directory to other
   - adding invoices feature in the dashboard
-  - directory sharing functionality with the help of path property
+        }
   - filter
 
 DONE:
@@ -86,3 +66,19 @@ DONE:
     - creating separate pages instead of section in the admin dashboard
     - deploy the frontend to netlify or any reliable place -> skip deploying to aws(s3 + cloudfornt) for now
     - cloudfront's filenaming and downloading problem -> remove cloudfront for now
+    - remove the manager role for now
+      - a privileged user can only alter info of lesser priviledged user, owner can promote/demote an admin while admin cant do this with owner but can do with a normal user
+      - admin can only suspend a user and read the files of users but can't unsuspend them or delete them
+      - owner can upload/delete/view/rename files or dirs of any user and can also unsuspend them
+      - directory sharing functionality with the help of path property
+      - a user can only view a file if:
+        - he is owner of the file
+        - he is owner of the app
+        - he is admin of the app
+        - file is shared to him with view/edit permissions
+      - a user can only rename a file if:
+        - he is owner of the file
+        - he is owner of the app
+    - minimise size of request object by not adding too much data
+      - reduce user object(userId,subscriptionId,rootDirId,role)
+      - reduce appsettings etc.

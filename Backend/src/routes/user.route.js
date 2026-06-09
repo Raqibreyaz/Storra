@@ -1,6 +1,6 @@
 import express from "express";
-import allowOnlyTo from "../middlewares/roleBasedAuth.middleware.js";
-import limitPrivileges from "../middlewares/limitPrivileges.middleware.js";
+import requireRole from "../middlewares/requireRole.middleware.js";
+import canActOnUser from "../middlewares/canActOnUser.middleware.js";
 import validateId from "../middlewares/validateId.middleware.js";
 import Role from "../constants/role.js";
 import {
@@ -25,18 +25,10 @@ const router = express.Router();
 router.param("userId", validateId);
 
 // only authenticated users will be allowed
-router.get(
-  "/",
-  applyRateLimit("READ"),
-  getUser,
-);
+router.get("/", applyRateLimit("READ"), getUser);
 
 // allow only authenticated users to logout
-router.post(
-  "/logout",
-  applyRateLimit("LOGOUT"),
-  logoutUser,
-);
+router.post("/logout", applyRateLimit("LOGOUT"), logoutUser);
 router.post(
   "/logout/all",
   applyRateLimit("LOGOUT_ALL"),
@@ -47,7 +39,7 @@ router.post(
 router.get(
   "/all",
   applyRateLimit("READ"),
-  allowOnlyTo([Role.OWNER, Role.ADMIN, Role.MANAGER]),
+  requireRole([Role.OWNER, Role.ADMIN]),
   getAllUsers,
 );
 
@@ -57,8 +49,8 @@ router.delete(
   "/:userId",
   applyRateLimit("ADMIN"),
   validate(deleteUserSchema),
-  allowOnlyTo([Role.OWNER, Role.ADMIN]),
-  limitPrivileges,
+  requireRole([Role.OWNER, Role.ADMIN]),
+  canActOnUser,
   deleteUser,
 );
 
@@ -67,15 +59,15 @@ router.delete(
 router.post(
   "/logout/:userId",
   applyRateLimit("ADMIN"),
-  allowOnlyTo([Role.OWNER, Role.ADMIN, Role.MANAGER]),
-  limitPrivileges,
+  requireRole([Role.OWNER, Role.ADMIN]),
+  canActOnUser,
   forceLogout,
 );
 
 router.patch(
   "/recover/:userId",
   applyRateLimit("ADMIN"),
-  allowOnlyTo([Role.OWNER]),
+  requireRole([Role.OWNER]),
   recoverUser,
 );
 
@@ -85,8 +77,8 @@ router.patch(
   "/role/:userId",
   applyRateLimit("ADMIN"),
   validate(changeUserRoleSchema),
-  allowOnlyTo([Role.OWNER, Role.ADMIN, Role.MANAGER]),
-  limitPrivileges,
+  requireRole([Role.OWNER, Role.ADMIN]),
+  canActOnUser,
   changeUserRole,
 );
 

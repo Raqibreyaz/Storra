@@ -7,7 +7,7 @@ import {
   revokeAccess,
   shareFile,
 } from "../controllers/fileShare.controller.js";
-import checkFileAccessAllowed from "../middlewares/checkFileAccess.middleware.js";
+import resolveFileAction from "../middlewares/resolveFileAction.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
 import {
   revokeFileAccessSchema,
@@ -30,7 +30,7 @@ router.get(
 router.get(
   "/:fileId",
   applyRateLimit("READ"),
-  checkFileAccessAllowed,
+  resolveFileAction,
   listUsersHavingTheFile,
 );
 
@@ -39,7 +39,7 @@ router.post(
   "/:fileId",
   applyRateLimit("MUTATE"),
   validate(shareFileSchema),
-  checkFileAccessAllowed,
+  resolveFileAction,
   shareFile,
 );
 
@@ -48,7 +48,7 @@ router.delete(
   "/:fileId",
   applyRateLimit("MUTATE"),
   validate(revokeFileAccessSchema),
-  checkFileAccessAllowed,
+  resolveFileAction,
   revokeAccess,
 );
 
