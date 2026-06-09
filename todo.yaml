@@ -1,8 +1,5 @@
 TODO:
   ISSUES:
-    - check for code maintainability in overall codebase
-    - code review for RBAC, subscription based file upload
-    - improving blockFileUploadOnInactiveSubscription and fixing bugs
     - adding subscription pause functionality in frontend
     - centralizing duplicate code(like formatSize(bytes)) across the codebase
     - need current global storage usage status to compare with hard-capped global storage

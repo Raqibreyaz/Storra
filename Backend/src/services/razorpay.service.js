@@ -29,6 +29,10 @@ export const pauseSubscription = (subscriptionId) => {
   return rzp.subscriptions.pause(subscriptionId, { pause_at: "now" });
 };
 
+export const resumeSubscription = (subscriptionId) => {
+  return rzp.subscriptions.resume(subscriptionId);
+};
+
 export const cancelSubscription = (subscriptionId, cancelAtPeriodEnd) => {
   return rzp.subscriptions.cancel(subscriptionId, cancelAtPeriodEnd);
 };

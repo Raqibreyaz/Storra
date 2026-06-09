@@ -3,7 +3,9 @@ import {
   cancelSubscription,
   createSubscription,
   getSubscription,
+  pauseSubscription,
   razorpayWebhook,
+  resumeSubscription,
   updateSubscription,
 } from "../controllers/subscription.controller.js";
 import checkAuthentication from "../middlewares/authenticate.middleware.js";
@@ -31,28 +33,42 @@ router.use(express.json());
 
 router.post(
   "/",
+  checkAuthentication,
   applyRateLimit("WRITE"),
   validate(createOrUpdateSubscriptionSchema),
   blockFreePlanUpgrade, //conditionally blocking upgrade from free plan
-  checkAuthentication,
   createSubscription,
 );
 
-router.get("/", applyRateLimit("READ"), checkAuthentication, getSubscription);
+router.get("/", checkAuthentication, applyRateLimit("READ"), getSubscription);
+
+router.put(
+  "/pause",
+  checkAuthentication,
+  applyRateLimit("MUTATE"),
+  pauseSubscription,
+);
+
+router.put(
+  "/resume",
+  checkAuthentication,
+  applyRateLimit("MUTATE"),
+  resumeSubscription,
+);
 
 router.put(
   "/cancel",
+  checkAuthentication,
   applyRateLimit("MUTATE"),
   validate(cancelSubscriptionSchema),
-  checkAuthentication,
   cancelSubscription,
 );
 
 router.put(
   "/update",
+  checkAuthentication,
   applyRateLimit("MUTATE"),
   validate(createOrUpdateSubscriptionSchema),
-  checkAuthentication,
   updateSubscription,
 );
 

@@ -131,6 +131,36 @@ export const getSubscription = async (req, res) => {
   });
 };
 
+export const pauseSubscription = async (req, res) => {
+  const userId = req.loggedInUser.userId;
+
+  const subscription = await Subscription.findOne({ user: userId }).lean();
+  if (!subscription) throw new ApiError(404, "Subscription not found");
+
+  if (subscription.status === "paused")
+    return res.json({ message: "Subscription already paused" });
+
+  // webhook will update the state in DB
+  await razorpayService.pauseSubscription(subscription.razorpaySubscriptionId);
+
+  return res.json({ message: "Subscription paused" });
+};
+
+export const resumeSubscription = async (req, res) => {
+  const userId = req.loggedInUser.userId;
+
+  const subscription = await Subscription.findOne({ user: userId }).lean();
+  if (!subscription) throw new ApiError(404, "Subscription not found");
+
+  if (subscription.status !== "paused")
+    return res.json({ message: "Subscription is not paused" });
+
+  // webhook will update the state in DB
+  await razorpayService.resumeSubscription(subscription.razorpaySubscriptionId);
+
+  return res.json({ message: "Subscription resumed" });
+};
+
 export const cancelSubscription = async (req, res) => {
   const userId = req.loggedInUser.userId;
   const user = await User.findById(userId).lean();

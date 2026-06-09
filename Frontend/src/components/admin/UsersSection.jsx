@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   getCurrentUser,
   getAllUsers,
@@ -15,6 +16,7 @@ const ROLE_LEVEL = { Owner: 0, Admin: 1, User: 2 };
 
 export default function UsersSection() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
@@ -130,15 +132,15 @@ export default function UsersSection() {
         hardDeleteMutation.error ||
         recoverMutation.error ||
         changeRoleMutation.error) && (
-        <div className="m-6 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 py-3 px-4 rounded-xl text-sm border border-red-200 dark:border-red-800/50">
-          {error?.message ||
-            logoutMutation.error?.message ||
-            softDeleteMutation.error?.message ||
-            hardDeleteMutation.error?.message ||
-            recoverMutation.error?.message ||
-            changeRoleMutation.error?.message}
-        </div>
-      )}
+          <div className="m-6 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 py-3 px-4 rounded-xl text-sm border border-red-200 dark:border-red-800/50">
+            {error?.message ||
+              logoutMutation.error?.message ||
+              softDeleteMutation.error?.message ||
+              hardDeleteMutation.error?.message ||
+              recoverMutation.error?.message ||
+              changeRoleMutation.error?.message}
+          </div>
+        )}
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-sm whitespace-nowrap">
@@ -260,11 +262,10 @@ export default function UsersSection() {
                     </td>
                     <td className="p-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium transition-colors ${
-                          user.isLoggedIn
+                        className={`inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium transition-colors ${user.isLoggedIn
                             ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
                             : "bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400"
-                        }`}
+                          }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${user.isLoggedIn ? "bg-emerald-500" : "bg-gray-400"}`}
@@ -294,6 +295,12 @@ export default function UsersSection() {
                             )
                           ) : userIsUnderMe ? (
                             <>
+                              <button
+                                className={`${actionBtnBase} bg-violet-500 hover:bg-violet-600`}
+                                onClick={() => navigate(`/app/admin/users/${user._id}/directory/${user.storageDir}`)}
+                              >
+                                View Files
+                              </button>
                               <button
                                 className={`${actionBtnBase} bg-blue-500 hover:enabled:bg-blue-600 disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:shadow-none`}
                                 onClick={() => logoutUser(user._id)}

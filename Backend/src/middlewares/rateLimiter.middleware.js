@@ -7,7 +7,7 @@ import { RATE_LIMIT_PRESETS } from "../config/rateLimit.config.js";
 
 /** Authenticated routes: identify by user-id, fall back to IP */
 export const userKeyGenerator = (req) =>
-  req.loggedInUser.userId || ipKeyGenerator(req.ip);
+  req.loggedInUser?.userId || ipKeyGenerator(req.ip);
 
 /** Pre-auth routes (login, register, OTP): identify by IP only */
 export const ipOnlyKeyGenerator = (req) => ipKeyGenerator(req.ip);

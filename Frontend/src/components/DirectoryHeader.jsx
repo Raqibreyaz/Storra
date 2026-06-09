@@ -27,6 +27,7 @@ function DirectoryHeader({
   fileInputRef,
   handleFileSelect,
   disabled = false,
+  targetUserId,
 }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
@@ -97,23 +98,23 @@ function DirectoryHeader({
       <div className="flex items-center m-0 mr-5 text-xl sm:text-2xl rounded text-gray-800 dark:text-gray-200 font-semibold overflow-x-auto whitespace-nowrap hide-scrollbar flex-1">
         <span
           className="cursor-pointer hover:underline text-blue-600 transition-colors"
-          onClick={() => navigate("/app")}
+          onClick={() => navigate(targetUserId ? `/app/admin/users/${targetUserId}` : "/app")}
         >
-          My Drive
+          {targetUserId ? "User's Drive" : "My Drive"}
         </span>
         {directoryPath && directoryPath.slice(1).map((folder) => (
           <span key={folder._id} className="flex items-center">
             <FaChevronRight className="mx-2 text-sm text-gray-400" />
             <span
               className="cursor-pointer hover:underline text-blue-600 transition-colors truncate max-w-[120px] sm:max-w-[200px]"
-              onClick={() => navigate(`/app/directory/${folder._id}`)}
+              onClick={() => navigate(targetUserId ? `/app/admin/users/${targetUserId}/directory/${folder._id}` : `/app/directory/${folder._id}`)}
               title={folder.name}
             >
               {folder.name}
             </span>
           </span>
         ))}
-        {directoryName !== "My Drive" && (
+        {directoryName !== "My Drive" && directoryName !== "User's Drive" && (
           <span className="flex items-center">
             <FaChevronRight className="mx-2 text-sm text-gray-400" />
             <span className="text-gray-600 dark:text-gray-300 truncate max-w-[150px] sm:max-w-xs block" title={directoryName}>

@@ -47,6 +47,14 @@ const router = createBrowserRouter([
     element: <DirectoryView />,
   },
   {
+    path: "/app/admin/users/:targetUserId",
+    element: <DirectoryView />,
+  },
+  {
+    path: "/app/admin/users/:targetUserId/directory/:dirId",
+    element: <DirectoryView />,
+  },
+  {
     path: "/app/admin",
     element: <AdminDashboard />,
   },

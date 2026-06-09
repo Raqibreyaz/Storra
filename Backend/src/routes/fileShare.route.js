@@ -1,6 +1,6 @@
 import express from "express";
 import validateId from "../middlewares/validateId.middleware.js";
-import authorizeDataAccess from "../middlewares/authorizeDataAccess.middleware.js";
+import guardAdminDataOperation from "../middlewares/guardAdminDataOperation.js";
 import {
   filesSharedWithMe,
   listUsersHavingTheFile,
@@ -56,7 +56,7 @@ router.delete(
 router.get(
   "/:userId",
   applyRateLimit("READ"),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   filesSharedWithMe,
 );
 
@@ -64,7 +64,7 @@ router.get(
 router.get(
   "/:userId/:fileId",
   applyRateLimit("READ"),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   listUsersHavingTheFile,
 );
 
@@ -73,7 +73,7 @@ router.post(
   "/:userId/:fileId",
   applyRateLimit("MUTATE"),
   validate(shareFileSchema),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   shareFile,
 );
 
@@ -82,7 +82,7 @@ router.delete(
   "/:userId/:fileId",
   applyRateLimit("MUTATE"),
   validate(revokeFileAccessSchema),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   revokeAccess,
 );
 
