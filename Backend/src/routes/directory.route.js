@@ -1,6 +1,6 @@
 import express from "express";
 import validateId from "../middlewares/validateId.middleware.js";
-import authorizeDataAccess from "../middlewares/authorizeDataAccess.middleware.js";
+import guardAdminDataOperation from "../middlewares/guardAdminDataOperation.js";
 import {
   createDirectory,
   deleteDirectory,
@@ -58,7 +58,7 @@ router.delete(
 router.get(
   "/:userId/{:dirId}",
   applyRateLimit("READ"),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   getDirectoryContents,
 );
 
@@ -66,7 +66,7 @@ router.post(
   "/:userId/:parentDirId",
   applyRateLimit("WRITE"),
   validate(createDirectorySchema),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   createDirectory,
 );
 
@@ -74,14 +74,14 @@ router.patch(
   "/:userId/:dirId",
   applyRateLimit("MUTATE"),
   validate(renameDirectorySchema),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   updateDirectoryName,
 );
 
 router.delete(
   "/:userId/:dirId",
   applyRateLimit("MUTATE"),
-  authorizeDataAccess,
+  guardAdminDataOperation,
   deleteDirectory,
 );
 

@@ -10,7 +10,7 @@ import {
   cancelFileUpload,
 } from "../controllers/file.controller.js";
 import guardAdminDataOperation from "../middlewares/guardAdminDataOperation.js";
-import checkFileAccessAllowed from "../middlewares/checkFileAccess.middleware.js";
+import resolveFileAction from "../middlewares/resolveFileAction.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
 import {
   getFileSchema,
@@ -44,7 +44,7 @@ router.get(
   "/:fileId",
   applyRateLimit("READ"),
   validate(getFileSchema),
-  checkFileAccessAllowed,
+  resolveFileAction,
   getFileContents,
 );
 
@@ -52,7 +52,7 @@ router.patch(
   "/rename/:fileId",
   applyRateLimit("MUTATE"),
   validate(renameFileSchema),
-  checkFileAccessAllowed,
+  resolveFileAction,
   renameFile,
 );
 
@@ -60,14 +60,14 @@ router.patch(
   "/set-access/:fileId",
   applyRateLimit("MUTATE"),
   validate(setAllowAnyoneSchema),
-  checkFileAccessAllowed,
+  resolveFileAction,
   setAllowAnyone,
 );
 
 router.delete(
   "/:fileId",
   applyRateLimit("MUTATE"),
-  checkFileAccessAllowed,
+  resolveFileAction,
   deleteFile,
 );
 

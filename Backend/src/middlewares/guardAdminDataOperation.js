@@ -4,9 +4,8 @@ can this logged-in user access another user's account data?
 
 import ApiError from "../helpers/apiError.js";
 import Role from "../constants/role.js";
-import User from "../models/user.model.js";
 
-export default async function authorizeDataAccess(
+export default async function guardAdminDataOperation(
   req,
   res,
   next,

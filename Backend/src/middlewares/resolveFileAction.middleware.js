@@ -29,7 +29,7 @@ export default async function resolveFileAction(req, res, next) {
 
   // allow for app owner or admin(GET Access)
   if (loggedInUserId) {
-    const loggedInUserRole = loggedInUser.role;
+    const loggedInUserRole = req.loggedInUser.role;
     if (loggedInUserRole === Role.OWNER) return next();
     if (loggedInUserRole === Role.ADMIN && req.method === "GET") return next();
   }

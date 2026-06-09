@@ -10,21 +10,24 @@ const Limits = Object.freeze(
 );
 
 export default async function canActOnUser(req, res, next) {
+  const loggedInUserId = req.loggedInUser.userId;
+  const loggedInUserRole = req.loggedInUser.role;
+
   const receivedUserId = req.params.userId;
   const role = req.body?.role;
-  
-  const loggedInUser = req.loggedInUser;
   const receivedUser = await User.findById(receivedUserId).lean();
 
-  // allow only when current user has lesser privilege limits than given role
-  // (jis role se karna hai + jis role par karna hai) current user role ke under ho
-  // whichever role from + whichever role to, all should be under current user's role
+  // skip if user is himself
+  if (loggedInUserId === receivedUserId) return next();
+
   if (
-    Limits[loggedInUser.role] < Limits[receivedUser.role] &&
-    (!role || Limits[loggedInUser.role] < Limits[role])
-  ) {
+    Limits[loggedInUserRole] < Limits[receivedUser.role] &&
+    (!role || Limits[loggedInUserRole] < Limits[role])
+  )
+    // allow only when current user has lesser privilege limits than given role
+    // (jis role se karna hai + jis role par karna hai) current user role ke under ho
+    // whichever role from + whichever role to, all should be under current user's role
     return next();
-  }
 
   throw new ApiError(403, "You are not Authorized for this action!");
 }
