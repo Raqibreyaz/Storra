@@ -5,18 +5,19 @@ import {
   BASE_URL,
   client,
   ApiError,
+  buildUserPath,
 } from "./client.js";
 
-export const deleteFile = (fileId, targetUserId) => apiDelete(`/file/${targetUserId ? targetUserId + '/' : ''}${fileId}`);
+export const deleteFile = (fileId, targetUserId) => apiDelete(`/file/${buildUserPath(targetUserId)}${fileId}`);
 
 export const renameFile = (fileId, newFilename, targetUserId) =>
-  apiPatch(`/file/rename/${targetUserId ? targetUserId + '/' : ''}${fileId}`, { newFilename });
+  apiPatch(`/file/rename/${buildUserPath(targetUserId)}${fileId}`, { newFilename });
 
 export const setFileAccess = (fileId, permission, targetUserId) =>
-  apiPatch(`/file/set-access/${targetUserId ? targetUserId + '/' : ''}${fileId}`, { permission });
+  apiPatch(`/file/set-access/${buildUserPath(targetUserId)}${fileId}`, { permission });
 
 export function getFileUrl(fileId, targetUserId) {
-  return `${BASE_URL}/file/${targetUserId ? targetUserId + '/' : ''}${fileId}`;
+  return `${BASE_URL}/file/${buildUserPath(targetUserId)}${fileId}`;
 }
 
 /**
@@ -40,7 +41,7 @@ export function uploadFile(dirId, file, { onProgress, onLoad, onError, targetUse
     try {
       // Step 1: Initiate — get presigned URL from backend
       const { fileId, signedUrl } = await client.post(
-        `/file/initiate/${targetUserId ? targetUserId + '/' : ''}${dirId ?? ""}`,
+        `/file/initiate/${buildUserPath(targetUserId)}${dirId ?? ""}`,
         { fileName: file.name, fileSize: file.size, fileType: file.type },
         { signal: controller.signal },
       );
@@ -86,7 +87,7 @@ export function uploadFile(dirId, file, { onProgress, onLoad, onError, targetUse
 
       // Step 3: Confirm upload with backend
       await client.post(
-        `/file/complete/${targetUserId ? targetUserId + '/' : ''}${fileId}`,
+        `/file/complete/${buildUserPath(targetUserId)}${fileId}`,
         {},
         {
           signal: controller.signal,

@@ -1,16 +1,6 @@
 import { PLANS, PLAN_KEYS } from "../config/plans.js";
+import formatSize from "../helpers/formatSize.js";
 
-const KB = 1024;
-const MB = 1024 * KB;
-const GB = 1024 * MB;
-const TB = 1024 * GB;
-
-function formatStorage(bytes) {
-  if (bytes >= TB) return `${(bytes / TB).toFixed(0)} TB`;
-  if (bytes >= GB) return `${(bytes / GB).toFixed(0)} GB`;
-  if (bytes >= MB) return `${(bytes / MB).toFixed(0)} MB`;
-  return `${(bytes / KB).toFixed(0)} KB`;
-}
 
 export const getPlans = (req, res) => {
   // Group plans by display name for the frontend
@@ -28,7 +18,7 @@ export const getPlans = (req, res) => {
     if (!planGroups[displayName]) {
       planGroups[displayName] = {
         displayName,
-        storage: formatStorage(storageQuotaBytes),
+        storage: formatSize(storageQuotaBytes),
         storageBytes: storageQuotaBytes,
         variants: {},
       };

@@ -13,7 +13,8 @@ import {
     FaArrowDown,
     FaCreditCard,
 } from "react-icons/fa";
-import { createSubscription, getPlans, getSubscription, updateSubscription, pauseSubscription, resumeSubscription } from "./api/plan.js";
+import { createSubscription, getPlans, getSubscription, updateSubscription } from "./api/plan.js";
+import { PLAN_ICONS, isSubscriptionEffectivelyFree } from "./utils/subscriptionHelpers.js";
 
 const PLAN_FEATURES = {
     Free: [
@@ -48,12 +49,6 @@ const PLAN_FEATURES = {
     ],
 };
 
-const PLAN_ICONS = {
-    Free: FaCloud,
-    Basic: FaShieldAlt,
-    Standard: FaBolt,
-    Pro: FaCrown,
-};
 
 const PLAN_COLORS = {
     Free: {
@@ -149,12 +144,12 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
     const price = activeVariant?.priceInPaise ?? 0;
     const savingsPercent = getYearlySavings(plan);
 
+    console.log(currentSubscription)
+
     const currentPlanKey = currentSubscription?.planKey;
 
-    const isGraceExpired = currentSubscription?.graceEndsAt && new Date(currentSubscription.graceEndsAt) <= new Date();
-    const isEffectivelyFree =
-        !currentSubscription?.status ||
-        (currentSubscription.status === "cancelled" && (!currentSubscription.cancelAtPeriodEnd || isGraceExpired));
+    const isEffectivelyFree = isSubscriptionEffectivelyFree(currentSubscription);
+
 
     const isCurrentPlan = currentPlanKey && activeVariant?.planKey === currentPlanKey && !isEffectivelyFree;
     const hasActiveSubscription =
@@ -185,13 +180,6 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
                     variant: "disabled",
                 };
             }
-            // Check for pause/resume states
-            if (currentSubscription?.status === "paused") {
-                return { label: "Resume", disabled: false, action: "resume", variant: "default" };
-            }
-            if (currentSubscription?.status === "active") {
-                return { label: "Pause", disabled: false, action: "pause", variant: "default" };
-            }
             // Compare storage to decide upgrade vs downgrade
             const currentStorage = currentSubscription.storageQuotaBytes || 0;
             const isUpgrade = plan.storageBytes > currentStorage || activeVariant.priceInPaise > currentSubscription.priceInPaise;
@@ -218,14 +206,6 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
             onPostPayment?.();
             navigate("/app/dashboard");
         },
-    });
-    const pauseMutation = useMutation({
-        mutationKey: ["pauseSubscription"],
-        mutationFn: pauseSubscription,
-    });
-    const resumeMutation = useMutation({
-        mutationKey: ["resumeSubscription"],
-        mutationFn: resumeSubscription,
     });
 
     const onSubscribe = async () => {
@@ -266,20 +246,12 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
             if (confirm(`Are you sure you want to ${buttonConfig.label.toLowerCase()} to the ${name} plan?`)) {
                 updateMutation.mutate(activeVariant.planKey);
             }
-        } else if (buttonConfig.action === "pause") {
-            if (confirm("Are you sure you want to pause your subscription?")) {
-                pauseMutation.mutate();
-            }
-        } else if (buttonConfig.action === "resume") {
-            if (confirm("Do you want to resume your subscription now?")) {
-                resumeMutation.mutate();
-            }
         } else if (buttonConfig.action === "navigate") {
             navigate("/app");
         }
     };
 
-    const isButtonLoading = subscriptionMutation.isPending || updateMutation.isPending || pauseMutation.isPending || resumeMutation.isPending;
+    const isButtonLoading = subscriptionMutation.isPending || updateMutation.isPending
 
     return (
         <div
@@ -417,10 +389,7 @@ const Plans = () => {
     const plans = plansData?.plans ?? [];
     const currentSubscription = subscriptionData?.subscription ?? null;
 
-    const isGraceExpired = currentSubscription?.graceEndsAt && new Date(currentSubscription.graceEndsAt) <= new Date();
-    const isEffectivelyFree =
-        !currentSubscription?.status ||
-        (currentSubscription.status === "cancelled" && (!currentSubscription.cancelAtPeriodEnd || isGraceExpired));
+    const isEffectivelyFree = isSubscriptionEffectivelyFree(currentSubscription);
 
     const handlePostPayment = () => {
         queryClient.invalidateQueries({ queryKey: ["subscription"] });

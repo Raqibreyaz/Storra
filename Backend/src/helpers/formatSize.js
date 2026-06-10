@@ -1,3 +1,4 @@
+// Keep in sync with Frontend/src/utils/formatSize.js
 export default function formatSize(bytes) {
   if (bytes == null) return "—";
   if (bytes === 0) return "0 B";

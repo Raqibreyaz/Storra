@@ -1,7 +1,5 @@
 TODO:
   ISSUES:
-    - subscription current period and next billing is not up to date
-    - centralizing duplicate code(like formatSize(bytes)) across the codebase
     - need current global storage usage status to compare with hard-capped global storage
     - nodemailer failed to refresh token, need to publish app to production maybe
     - using cron job:
@@ -67,7 +65,6 @@ DONE:
       - a privileged user can only alter info of lesser priviledged user, owner can promote/demote an admin while admin cant do this with owner but can do with a normal user
       - admin can only suspend a user and read the files of users but can't unsuspend them or delete them
       - owner can upload/delete/view/rename files or dirs of any user and can also unsuspend them
-      - directory sharing functionality with the help of path property
       - a user can only view a file if:
         - he is owner of the file
         - he is owner of the app
@@ -78,4 +75,6 @@ DONE:
         - he is owner of the app
     - minimise size of request object by not adding too much data
       - reduce user object(userId,subscriptionId,rootDirId,role)
+    - subscription current period and next billing is not up to date -> it was charged but our server was down to receive the event
       - reduce appsettings etc.
+    - centralizing duplicate code(like formatSize(bytes)) across the codebase

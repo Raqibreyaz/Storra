@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDirectoryCounts } from "../api/directory";
 import formatSize from '../utils/formatSize';
-import { formatDate } from "../utils/date";
+import { formatDateTime } from "../utils/date";
 
 function DetailsModal({ item, directoryName, directoryPath, onClose }) {
   useEffect(() => {
@@ -42,8 +42,8 @@ function DetailsModal({ item, directoryName, directoryPath, onClose }) {
     }
 
     res.push(
-      { label: "Created", value: formatDate(item.createdAt) },
-      { label: "Updated", value: formatDate(item.updatedAt) }
+      { label: "Created", value: formatDateTime(item.createdAt) },
+      { label: "Updated", value: formatDateTime(item.updatedAt) }
     );
 
     return res;

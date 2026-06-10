@@ -1,14 +1,36 @@
 import crypto from "crypto";
 import axios from "axios";
 import User from "../models/user.model.js";
-import Session from "../models/session.model.js";
 import ApiError from "../helpers/apiError.js";
 import createCookie from "../helpers/createCookie.js";
 import verifyIdToken from "../services/google.service.js";
 import createUserWithEssentials from "../services/user.service.js";
 import sendOtpService from "../services/otp.service.js";
+import { createSessionWithLimit } from "../services/session.service.js";
 import Role from "../constants/role.js";
 import Provider from "../constants/provider.js";
+
+/**
+ * Shared guard for existing OAuth users (Google / GitHub).
+ * Validates the user is active and matches the expected providerId,
+ * then creates a session and sets the auth cookie.
+ */
+async function handleExistingOAuthLogin(user, providerId, res) {
+  if (user.isDeleted)
+    throw new ApiError(
+      403,
+      "Your account is flagged as deleted, Contact App Owner for further details!",
+    );
+
+  if (user.providerId !== String(providerId))
+    throw new ApiError(
+      400,
+      `User already exists as a ${user.authProvider} user`,
+    );
+
+  const sessionId = await createSessionWithLimit(user._id);
+  createCookie(res, sessionId);
+}
 
 
 export const registerUser = async (req, res, next) => {
@@ -38,22 +60,8 @@ export const loginUser = async (req, res, next) => {
 
   const user = await User.findOne({ email }).select("_id").lean();
 
-  // first check if user hasn't exhausted number of sessions limits
-  const noOfSessions = await Session.countDocuments({ user: user._id });
-  if (noOfSessions >= 2) {
-    await Session.findOneAndDelete(
-      { user: user._id },
-      { sort: { expiresAt: 1 } },
-    );
-  }
-
-  // create a new session for the user
-  const userSession = await Session.insertOne({
-    user: user._id,
-    expiresAt: new Date((Date.now() / 1000 + 86400) * 1000),
-  });
-
-  createCookie(res, userSession.id);
+  const sessionId = await createSessionWithLimit(user._id);
+  createCookie(res, sessionId);
   res.status(200).json({ message: "User logged in!" });
 };
 
@@ -81,35 +89,7 @@ export const loginWithGoogle = async (req, res, next) => {
 
   // when user exists then create a new session + limit the no of sessions
   if (userDoc) {
-    // when user is not a google user
-    if (userDoc.providerId !== String(userData.sub))
-      throw new ApiError(
-        400,
-        `User already exists as a ${userDoc.authProvider} user`,
-      );
-
-    // when user got soft deleted
-    if (userDoc.isDeleted)
-      throw new ApiError(
-        403,
-        "Your account is flagged as deleted, Contact App Owner for further details!",
-      );
-
-    // first check if user hasn't exhausted number of sessions limits
-    const noOfSessions = await Session.countDocuments({ user: userDoc._id });
-    if (noOfSessions >= 2)
-      await Session.findOneAndDelete(
-        { user: userDoc._id },
-        { sort: { expiresAt: 1 } },
-      );
-
-    // create a new session for the user
-    const userSession = await Session.insertOne({
-      user: userDoc._id,
-      expiresAt: new Date((Date.now() / 1000 + 86400) * 1000),
-    });
-
-    createCookie(res, userSession.id);
+    await handleExistingOAuthLogin(userDoc, userData.sub, res);
   }
 
   res.status(200).json({ message: "User logged in!" });
@@ -195,33 +175,7 @@ export const loginWithGithub = async (req, res, next) => {
 
   // when user exists then create a new session + limit the no of sessions
   if (user) {
-    if (user.isDeleted)
-      throw new ApiError(
-        403,
-        "Your account is flagged as deleted, Contact App Owner for further details!",
-      );
-
-    if (user.providerId !== String(githubId))
-      throw new ApiError(
-        400,
-        `User already exists as a ${user.authProvider} user`,
-      );
-
-    // first check if user hasn't exhausted number of sessions limits
-    const noOfSessions = await Session.countDocuments({ user: user._id });
-    if (noOfSessions >= 2)
-      await Session.findOneAndDelete(
-        { user: user._id },
-        { sort: { expiresAt: 1 } },
-      );
-
-    // create a new session for the user
-    const userSession = await Session.insertOne({
-      user: user._id,
-      expiresAt: new Date((Date.now() / 1000 + 86400) * 1000),
-    });
-
-    createCookie(res, userSession.id);
+    await handleExistingOAuthLogin(user, githubId, res);
   }
 
   res.redirect(`${process.env.FRONTEND_URI}/callback`);

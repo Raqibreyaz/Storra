@@ -75,4 +75,19 @@ export async function apiDelete(endpoint, body) {
   return client.delete(endpoint, { data: body });
 }
 
+/**
+ * Build the optional user-scoped path prefix used by admin file/directory routes.
+ *
+ * When an admin operates on another user's files the backend expects the
+ * targetUserId prepended to the resource path, e.g. `/file/{userId}/{fileId}`.
+ * Previously this was inlined as `${targetUserId ? targetUserId + '/' : ''}`
+ * in every API function (10 occurrences). A single change here propagates everywhere.
+ *
+ * @param {string|null|undefined} targetUserId
+ * @returns {string}  e.g. "abc123/" or ""
+ */
+export function buildUserPath(targetUserId) {
+  return targetUserId ? `${targetUserId}/` : "";
+}
+
 export { BASE_URL, client };

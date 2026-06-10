@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  FaArrowLeft, FaCloud, FaShieldAlt, FaBolt, FaCrown,
-  FaEnvelope, FaUser, FaGoogle, FaGithub, FaExchangeAlt,
+  FaArrowLeft, FaCloud,
+  FaEnvelope, FaGoogle, FaGithub, FaExchangeAlt,
   FaTimes, FaCheckCircle, FaExclamationTriangle, FaClock,
   FaPause, FaPlay, FaBan, FaHourglassHalf, FaCreditCard,
 } from "react-icons/fa";
@@ -13,6 +13,8 @@ import {
   pauseSubscription, resumeSubscription,
 } from "./api/plan.js";
 import formatSize from "./utils/formatSize.js";
+import { formatDate } from "./utils/date.js";
+import { PLAN_ICONS, isSubscriptionEffectivelyFree } from "./utils/subscriptionHelpers.js";
 import ProfileImage from "./components/ProfileImage.jsx";
 
 
@@ -62,19 +64,6 @@ const AUTH_PROVIDER_CONFIG = {
   github: { label: "GitHub", icon: FaGithub, color: "text-gray-800" },
 };
 
-const PLAN_ICONS = {
-  Free: FaCloud,
-  Basic: FaShieldAlt,
-  Standard: FaBolt,
-  Pro: FaCrown,
-};
-
-function formatDate(dateStr) {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-IN", {
-    day: "numeric", month: "short", year: "numeric",
-  });
-}
 
 // ─── Shared action-button class builder ─────────────────────────────────────
 // BUG FIX (DRY): All action buttons shared 80% identical Tailwind strings.
@@ -265,9 +254,7 @@ function SubscriptionCard({
     ? new Date(subscription.currentPeriodEnd) <= new Date()
     : false;
 
-  // "Effectively free" = on free plan, OR cancelled and the paid period has ended
-  const isEffectivelyFree =
-    isFree || (isCancelledImmediately) || (isCancelledAtEnd && isPeriodExpired);
+  const isEffectivelyFree = isSubscriptionEffectivelyFree(subscription);
 
   // Pending cancellation = cancelled but user still has access until period end
   const isPendingCancellation = isCancelledAtEnd && !isPeriodExpired;

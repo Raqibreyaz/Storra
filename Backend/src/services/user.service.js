@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import Directory from "../models/directory.model.js";
 import Session from "../models/session.model.js";
 import { getAppSettings } from "../services/appSetting.service.js";
+import { getSessionExpiry } from "../services/session.service.js";
 import ApiError from "../helpers/apiError.js";
 
 export default async function createUserWithEssentials({
@@ -64,7 +65,7 @@ export default async function createUserWithEssentials({
       userSession = await Session.insertOne(
         {
           user: userId,
-          expiresAt: new Date((Date.now() / 1000 + 86400) * 1000),
+          expiresAt: getSessionExpiry(),
         },
         { session },
       );
