@@ -21,24 +21,13 @@ import {
 import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 import { blockFileUpload } from "../middlewares/appSetting.middleware.js";
 import blockFileUploadOnInactiveSubscription from "../middlewares/blockFileUploadOnInactiveSubscription.middleware.js";
+import checkAuthentication from "../middlewares/authenticate.middleware.js";
 
 const router = express.Router();
 
 router.param("fileId", validateId);
 router.param("userId", validateId);
 router.param("parentDirId", validateId);
-
-/* for [data_owner, viewer, editor] only */
-router.post(
-  "/initiate/{:parentDirId}",
-  applyRateLimit("WRITE"),
-  validate(initiateFileUploadSchema),
-  blockFileUpload,
-  blockFileUploadOnInactiveSubscription,
-  initiateFileUpload,
-);
-router.delete("/cancel/:fileId", applyRateLimit("WRITE"), cancelFileUpload);
-router.post("/complete/:fileId", applyRateLimit("WRITE"), completeFileUpload);
 
 router.get(
   "/:fileId",
@@ -71,9 +60,25 @@ router.delete(
   deleteFile,
 );
 
+// user must log in for further actions
+router.use(checkAuthentication)
+
+/* for [data_owner, viewer, editor] only */
+router.post(
+  "/initiate/{:parentDirId}",
+  applyRateLimit("WRITE"),
+  validate(initiateFileUploadSchema),
+  blockFileUpload,
+  blockFileUploadOnInactiveSubscription,
+  initiateFileUpload,
+);
+router.delete("/cancel/:fileId", applyRateLimit("WRITE"), cancelFileUpload);
+router.post("/complete/:fileId", applyRateLimit("WRITE"), completeFileUpload);
+
+
 /* for [data_owner, app_owner, admin] only */
 router.post(
-  "/initiate/:userId/{:parentDirId}",
+  "/initiate/:userId/:parentDirId",
   applyRateLimit("WRITE"),
   validate(initiateFileUploadSchema),
   guardAdminDataOperation,

@@ -5,11 +5,10 @@ can this logged-in user access another user's account data?
 import ApiError from "../helpers/apiError.js";
 import Role from "../constants/role.js";
 
-export default async function guardAdminDataOperation(
-  req,
-  res,
-  next,
-) {
+export default async function guardAdminDataOperation(req, res, next) {
+  if (!req.loggedInUser)
+    throw new ApiError(401, "You must authenticate to perform this action!");
+
   const targetUserId = req.params.userId;
   const loggedInUserId = req.loggedInUser.userId;
   const loggedInUserRole = req.loggedInUser.role;

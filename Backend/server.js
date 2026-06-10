@@ -46,14 +46,14 @@ app.use("/subscriptions", subscriptionRoutes);
 app.use(attachAppSettings);
 
 app.use(express.json());
+app.use("/file", fileRoutes);
+app.use("/plans", planRoutes);
+app.use("/auth", authRoutes);
 app.use("/directory", checkAuthentication, directoryRoutes);
-app.use("/file", checkAuthentication, fileRoutes);
 app.use("/share", checkAuthentication, fileShareRoutes);
 app.use("/user", checkAuthentication, userRoutes);
 app.use("/item", checkAuthentication, itemRoutes);
 app.use("/app-setting", checkAuthentication, appSettingRoutes);
-app.use("/plans", planRoutes);
-app.use("/auth", authRoutes);
 
 app.get("/health", (req, res) =>
   res.json({ message: "Server working as expected!" }),

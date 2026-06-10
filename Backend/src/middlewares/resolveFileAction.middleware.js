@@ -24,15 +24,18 @@ export default async function resolveFileAction(req, res, next) {
   // allow the file editor due to global allowance
   if (file.allowAnyoneAccess === "Edit") return next();
 
-  // direct allow the file owner
-  if (file.user.equals(loggedInUserId)) return next();
-
-  // allow for app owner or admin(GET Access)
-  if (loggedInUserId) {
-    const loggedInUserRole = req.loggedInUser.role;
-    if (loggedInUserRole === Role.OWNER) return next();
-    if (loggedInUserRole === Role.ADMIN && req.method === "GET") return next();
+  if (!loggedInUserId) {
+    throw new ApiError(
+      401,
+      "You are not authenticated to perform this action!",
+    );
   }
+
+  // allow for app owner, file owner or admin(GET Access)
+  const loggedInUserRole = req.loggedInUser.role;
+  if (file.user.equals(loggedInUserId)) return next();
+  if (loggedInUserRole === Role.OWNER) return next();
+  if (loggedInUserRole === Role.ADMIN && req.method === "GET") return next();
 
   // find if the file shared to that user
   const fileShare = await FileShare.findOne({
