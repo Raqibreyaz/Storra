@@ -8,7 +8,7 @@ import {
   resumeSubscription,
   updateSubscription,
 } from "../controllers/subscription.controller.js";
-import checkAuthentication from "../middlewares/authenticate.middleware.js";
+import allowOnlyAuthenticatedUser from "../middlewares/authenticate.middleware.js";
 import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
 import {
@@ -33,32 +33,37 @@ router.use(express.json());
 
 router.post(
   "/",
-  checkAuthentication,
+  allowOnlyAuthenticatedUser,
   applyRateLimit("WRITE"),
   validate(createOrUpdateSubscriptionSchema),
   blockFreePlanUpgrade, //conditionally blocking upgrade from free plan
   createSubscription,
 );
 
-router.get("/", checkAuthentication, applyRateLimit("READ"), getSubscription);
+router.get(
+  "/",
+  allowOnlyAuthenticatedUser,
+  applyRateLimit("READ"),
+  getSubscription,
+);
 
 router.put(
   "/pause",
-  checkAuthentication,
+  allowOnlyAuthenticatedUser,
   applyRateLimit("MUTATE"),
   pauseSubscription,
 );
 
 router.put(
   "/resume",
-  checkAuthentication,
+  allowOnlyAuthenticatedUser,
   applyRateLimit("MUTATE"),
   resumeSubscription,
 );
 
 router.put(
   "/cancel",
-  checkAuthentication,
+  allowOnlyAuthenticatedUser,
   applyRateLimit("MUTATE"),
   validate(cancelSubscriptionSchema),
   cancelSubscription,
@@ -66,7 +71,7 @@ router.put(
 
 router.put(
   "/update",
-  checkAuthentication,
+  allowOnlyAuthenticatedUser,
   applyRateLimit("MUTATE"),
   validate(createOrUpdateSubscriptionSchema),
   updateSubscription,

@@ -21,7 +21,7 @@ import {
 import { applyRateLimit } from "../middlewares/rateLimiter.middleware.js";
 import { blockFileUpload } from "../middlewares/appSetting.middleware.js";
 import blockFileUploadOnInactiveSubscription from "../middlewares/blockFileUploadOnInactiveSubscription.middleware.js";
-import checkAuthentication from "../middlewares/authenticate.middleware.js";
+import allowOnlyAuthenticatedUser from "../middlewares/authenticate.middleware.js";
 
 const router = express.Router();
 
@@ -61,7 +61,7 @@ router.delete(
 );
 
 // user must log in for further actions
-router.use(checkAuthentication)
+router.use(allowOnlyAuthenticatedUser);
 
 /* for [data_owner, viewer, editor] only */
 router.post(
@@ -74,7 +74,6 @@ router.post(
 );
 router.delete("/cancel/:fileId", applyRateLimit("WRITE"), cancelFileUpload);
 router.post("/complete/:fileId", applyRateLimit("WRITE"), completeFileUpload);
-
 
 /* for [data_owner, app_owner, admin] only */
 router.post(

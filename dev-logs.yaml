@@ -212,5 +212,8 @@ issues:
   - issue: .env file was not getting read by dotenv even it was present at the project level, causing the app to crash or behave unexpectedly
   - fix: dotnev by default uses, path.resolve(process.cwd(),'.env'), which may fail in case the server is started from an external directory, so made an static file to configure the env file path and import
 
+  - issue: due to the global file allowance we needed to remove the checkAuthentication middleware, so this caused even an authenticated user to not access his files as the req.loggedInUser is not populated
+  - fix: moved the allowOnlyAuthenticatedUser middleware main logic to a reusable helper function "checkAuthentication" and used it in requireAction middleware to only allow authenticated users
+
 LOGS:  
   - i found a very interesting bug while uploading file to s3, actually i used mongodb id as s3 object key, so instead of id.toString() i did String(id) and behavior is different, String(id) even added double quotes in the objectKey, means s3 object with quoted name but when i did .toString then all things worked expectedly

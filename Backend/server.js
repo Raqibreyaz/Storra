@@ -10,7 +10,7 @@ import itemRoutes from "./src/routes/item.route.js";
 import subscriptionRoutes from "./src/routes/subscription.route.js";
 import planRoutes from "./src/routes/plan.route.js";
 import appSettingRoutes from "./src/routes/appSetting.route.js";
-import checkAuthentication from "./src/middlewares/authenticate.middleware.js";
+import allowOnlyAuthenticatedUser from "./src/middlewares/authenticate.middleware.js";
 import { globalErrorHandler } from "./src/middlewares/errorHandler.middleware.js";
 import { globalLimiter } from "./src/middlewares/rateLimiter.middleware.js";
 
@@ -49,11 +49,11 @@ app.use(express.json());
 app.use("/file", fileRoutes);
 app.use("/plans", planRoutes);
 app.use("/auth", authRoutes);
-app.use("/directory", checkAuthentication, directoryRoutes);
-app.use("/share", checkAuthentication, fileShareRoutes);
-app.use("/user", checkAuthentication, userRoutes);
-app.use("/item", checkAuthentication, itemRoutes);
-app.use("/app-setting", checkAuthentication, appSettingRoutes);
+app.use("/directory", allowOnlyAuthenticatedUser, directoryRoutes);
+app.use("/share", allowOnlyAuthenticatedUser, fileShareRoutes);
+app.use("/user", allowOnlyAuthenticatedUser, userRoutes);
+app.use("/item", allowOnlyAuthenticatedUser, itemRoutes);
+app.use("/app-setting", allowOnlyAuthenticatedUser, appSettingRoutes);
 
 app.get("/health", (req, res) =>
   res.json({ message: "Server working as expected!" }),

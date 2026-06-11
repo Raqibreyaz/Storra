@@ -6,12 +6,12 @@
 
 import Role from "../constants/role.js";
 import ApiError from "../helpers/apiError.js";
+import checkAuthentication from "../helpers/checkAuthentication.js";
 import File from "../models/file.model.js";
 import FileShare from "../models/fileShare.model.js";
 
 export default async function resolveFileAction(req, res, next) {
   const fileId = req.params.fileId;
-  const loggedInUserId = req.loggedInUser?.userId;
 
   const file = await File.findById(fileId).lean();
   if (!file) throw new ApiError(404, "File not found!");
@@ -24,6 +24,9 @@ export default async function resolveFileAction(req, res, next) {
   // allow the file editor due to global allowance
   if (file.allowAnyoneAccess === "Edit") return next();
 
+  // only authenticated user will be allowed from here
+  await checkAuthentication(req);
+  const loggedInUserId = req.loggedInUser?.userId;
   if (!loggedInUserId) {
     throw new ApiError(
       401,
