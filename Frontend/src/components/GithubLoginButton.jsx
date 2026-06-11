@@ -31,11 +31,8 @@ const GithubLoginButton = ({
     if (!listenerAttached.current) {
       listenerAttached.current = true;
       const onMessage = (event) => {
-        console.log("received data:");
-        console.log(event.origin);
         if (event.origin !== FRONTEND_URI) return;
         if (event.data?.message === "success") {
-          console.log("navigating to home page");
           navigate("/app");
         }
         setLoading(false);

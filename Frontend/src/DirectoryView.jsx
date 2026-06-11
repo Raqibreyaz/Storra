@@ -24,9 +24,6 @@ function DirectoryView() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
 
-  console.log(targetUserId)
-  console.log(dirId)
-
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
     queryFn: () => import("./api/user.js").then(m => m.getCurrentUser()),
@@ -272,6 +269,7 @@ function DirectoryView() {
           activeContextMenu={activeContextMenu}
           contextMenuPos={contextMenuPos}
           handleContextMenu={handleContextMenu}
+          closeContextMenu={closeContextMenu}
           isUploading={isUploading}
           uploadProgress={progress}
           cancelUpload={cancelUpload}

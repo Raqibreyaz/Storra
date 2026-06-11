@@ -8,7 +8,6 @@ import {
     FaShieldAlt,
     FaBolt,
     FaInfinity,
-    FaCrown,
     FaArrowUp,
     FaArrowDown,
     FaCreditCard,
@@ -143,8 +142,6 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
 
     const price = activeVariant?.priceInPaise ?? 0;
     const savingsPercent = getYearlySavings(plan);
-
-    console.log(currentSubscription)
 
     const currentPlanKey = currentSubscription?.planKey;
 

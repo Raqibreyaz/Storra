@@ -46,7 +46,6 @@ export default function SettingsSection() {
 
   useEffect(() => {
     if (backendData) {
-      console.log(backendData)
       const { appSettings } = backendData
       const storageCap = bytesToUnitValue(appSettings?.globalObjectStorageCap?.bytesLimit);
       const uploadSize = bytesToUnitValue(appSettings?.maxFileUploadSize?.bytesLimit);
@@ -130,8 +129,6 @@ export default function SettingsSection() {
 
   const units = ["B", "KB", "MB", "GB", "TB"];
   const smallUnits = ["B", "KB", "MB", "GB"];
-
-  console.log(localState)
 
   return (
     <div className="font-sans transition-colors bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">

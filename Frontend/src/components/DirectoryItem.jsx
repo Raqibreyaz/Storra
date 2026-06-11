@@ -11,6 +11,7 @@ function DirectoryItem({
   activeContextMenu,
   contextMenuPos,
   handleContextMenu,
+  closeContextMenu,
   isUploading,
   uploadProgress,
   cancelUpload,
@@ -97,6 +98,7 @@ function DirectoryItem({
           openRenameModal={openRenameModal}
           onShare={onShare}
           onManageAccess={onManageAccess}
+          closeContextMenu={closeContextMenu}
         />
       )}
     </div>
