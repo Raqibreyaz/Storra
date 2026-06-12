@@ -221,10 +221,7 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
             "key": apiKey,
             "subscription_id": subscriptionId,
             "name": businessName,
-            "handler": function (response) {
-                // console.log(response.razorpay_payment_id);
-                // console.log(response.razorpay_subscription_id);
-                // console.log(response.razorpay_signature);
+            "handler": function () {
                 onPostPayment?.();
                 navigate("/app/dashboard");
             },

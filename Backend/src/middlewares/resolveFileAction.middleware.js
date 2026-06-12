@@ -25,7 +25,7 @@ export default async function resolveFileAction(req, res, next) {
   if (file.allowAnyoneAccess === "Edit") return next();
 
   // only authenticated user will be allowed from here
-  await checkAuthentication(req);
+  await checkAuthentication(req, res);
   const loggedInUserId = req.loggedInUser?.userId;
   if (!loggedInUserId) {
     throw new ApiError(

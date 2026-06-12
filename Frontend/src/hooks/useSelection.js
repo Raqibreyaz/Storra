@@ -1,12 +1,14 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 
 export default function useSelection(items, dirId) {
   const [selectedItems, setSelectedItems] = useState({ dirs: [], files: [] });
+  const [prevDirId, setPrevDirId] = useState(dirId);
 
   // Reset selection on navigation
-  useEffect(() => {
+  if (dirId !== prevDirId) {
+    setPrevDirId(dirId);
     setSelectedItems({ dirs: [], files: [] });
-  }, [dirId]);
+  }
 
   // Single click: exclusive select (replaces current selection)
   const selectItem = useCallback((id, isDirectory) => {

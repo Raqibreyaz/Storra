@@ -21,10 +21,6 @@ function DirectoryItem({
   const handleItemClick = useDriveStore((s) => s.handleItemClick);
   const contextMenu = useDriveStore((s) => s.contextMenu);
   const handleContextMenu = useDriveStore((s) => s.handleContextMenu);
-  const openRename = useDriveStore((s) => s.openRename);
-  const openShare = useDriveStore((s) => s.openShare);
-  const openAccess = useDriveStore((s) => s.openAccess);
-  const openDetails = useDriveStore((s) => s.openDetails);
 
   const isUploadingItem = item._id.startsWith("temp-");
   const isSelected = item.isDirectory

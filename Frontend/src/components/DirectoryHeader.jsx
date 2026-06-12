@@ -34,7 +34,7 @@ function DirectoryHeader({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: userData, error: userError } = useQuery({
+  const { data: userData } = useQuery({
     queryKey: ["currentUser"],
     queryFn: getCurrentUser,
     retry: false,

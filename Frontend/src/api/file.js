@@ -1,7 +1,6 @@
 import {
   apiDelete,
   apiPatch,
-  apiPost,
   BASE_URL,
   client,
   ApiError,

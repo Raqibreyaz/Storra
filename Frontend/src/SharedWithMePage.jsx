@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaArrowLeft, FaEye, FaEdit } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -14,7 +13,6 @@ import useContextMenu from "./hooks/useContextMenu";
 import { confirmDialog } from "./store/uiStore";
 
 export default function SharedWithMePage() {
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
 
     const { data: sharedFiles = [], isLoading, error } = useQuery({

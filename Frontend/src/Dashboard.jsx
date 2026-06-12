@@ -244,14 +244,12 @@ function SubscriptionCard({
   const navigate = useNavigate();
 
   const status = subscription.status ?? "free"; // BUG FIX: was `|| "free"` which coerces "" to "free" too — intentional here but explicit is safer
-  const isFree = !subscription.status;
   const statusConfig = STATUS_CONFIG[status];
 
   const PlanIcon = PLAN_ICONS[subscription.planName] ?? FaCloud;
 
   // BUG FIX: Consolidate all status-derived booleans in one place so they can't drift
   const isCancelledAtEnd = status === "cancelled" && subscription.cancelAtPeriodEnd;
-  const isCancelledImmediately = status === "cancelled" && !subscription.cancelAtPeriodEnd;
   const isPeriodExpired = subscription.currentPeriodEnd
     ? new Date(subscription.currentPeriodEnd) <= new Date()
     : false;
@@ -452,7 +450,6 @@ function DetailItem({ label, value }) {
 
 // ─── Dashboard Page ─────────────────────────────────────────────────────────
 const Dashboard = () => {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCancelModal, setShowCancelModal] = useState(false);
 
@@ -535,7 +532,7 @@ const Dashboard = () => {
   return (
     <div className="transition-colors">
 
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-6">
+      <section className="max-w-4xl mx-auto mt-4 px-4 sm:px-6 pb-6">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight transition-colors">
           My Account
         </h1>

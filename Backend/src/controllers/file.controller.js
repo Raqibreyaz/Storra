@@ -33,10 +33,9 @@ export const getFileContents = async (req, res, next) => {
 
   if (!toDownload) {
     const ext = path.extname(file.name).toLowerCase();
-    if (SAFE_INLINE_TYPES.has(ext)) {
-    } else if (RENDER_AS_TEXT.has(ext)) {
+    if (RENDER_AS_TEXT.has(ext)) {
       renderAsText = true;
-    } else {
+    } else if (!SAFE_INLINE_TYPES.has(ext)) {
       // unknown/binary types — force download
       toDownload = true;
     }

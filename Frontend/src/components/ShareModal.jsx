@@ -9,7 +9,7 @@ function ShareModal({ fileId, fileName, onClose }) {
     const [permission, setPermission] = useState("View");
     const queryClient = useQueryClient();
 
-    const { data: sharedUsers = [], isLoading, error } = useQuery({
+    const { data: sharedUsers = [], error } = useQuery({
         queryKey: ["sharedUsers", fileId],
         queryFn: () => getSharedUsers(fileId),
     });

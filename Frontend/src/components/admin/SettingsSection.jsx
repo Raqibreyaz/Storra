@@ -45,29 +45,37 @@ export default function SettingsSection() {
   const [localState, setLocalState] = useState(null)
 
   useEffect(() => {
+    let active = true;
     if (backendData) {
-      const { appSettings } = backendData
+      const { appSettings } = backendData;
       const storageCap = bytesToUnitValue(appSettings?.globalObjectStorageCap?.bytesLimit);
       const uploadSize = bytesToUnitValue(appSettings?.maxFileUploadSize?.bytesLimit);
 
-      setLocalState({
-        newRegistrationDisabled: appSettings?.newRegistrationDisabled ?? false,
+      setTimeout(() => {
+        if (active) {
+          setLocalState({
+            newRegistrationDisabled: appSettings?.newRegistrationDisabled ?? false,
 
-        storageCapEnabled: appSettings?.globalObjectStorageCap?.enabled ?? false,
-        storageCapValue: storageCap.value,
-        storageCapUnit: storageCap.unit,
+            storageCapEnabled: appSettings?.globalObjectStorageCap?.enabled ?? false,
+            storageCapValue: storageCap.value,
+            storageCapUnit: storageCap.unit,
 
-        uploadSizeEnabled: appSettings?.maxFileUploadSize?.enabled ?? false,
-        uploadSizeValue: uploadSize.value,
-        uploadSizeUnit: uploadSize.unit,
+            uploadSizeEnabled: appSettings?.maxFileUploadSize?.enabled ?? false,
+            uploadSizeValue: uploadSize.value,
+            uploadSizeUnit: uploadSize.unit,
 
-        fileUploadDisabled: appSettings?.fileUploadDisabled ?? false,
-        freePlanUpgradeDisabled: appSettings?.freePlanUpgradeDisabled ?? false,
+            fileUploadDisabled: appSettings?.fileUploadDisabled ?? false,
+            freePlanUpgradeDisabled: appSettings?.freePlanUpgradeDisabled ?? false,
 
-        noOfUsersAllowedEnabled: appSettings?.noOfUsersAllowed?.enabled ?? false,
-        noOfUsersAllowedCount: appSettings?.noOfUsersAllowed?.count ?? 10,
-      });
+            noOfUsersAllowedEnabled: appSettings?.noOfUsersAllowed?.enabled ?? false,
+            noOfUsersAllowedCount: appSettings?.noOfUsersAllowed?.count ?? 10,
+          });
+        }
+      }, 0);
     }
+    return () => {
+      active = false;
+    };
   }, [backendData]);
 
   const [errors, setErrors] = useState({});

@@ -2,7 +2,7 @@ import ApiError from "../helpers/apiError.js";
 import User from "../models/user.model.js";
 import Session from "../models/session.model.js";
 
-export default async function checkAuthentication(req) {
+export default async function checkAuthentication(req, res) {
   const sessionId = req.signedCookies?.authToken ?? "";
 
   let user = null;
@@ -18,7 +18,7 @@ export default async function checkAuthentication(req) {
 
   // revoke the token also when exist
   if (!sessionId || !user) {
-    if (sessionId) res.clearCookie("authToken");
+    if (sessionId && res) res.clearCookie("authToken");
     throw new ApiError(401, "Login to use the App!", "AUTH_REQUIRED");
   }
 }

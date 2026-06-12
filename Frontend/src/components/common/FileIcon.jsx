@@ -8,7 +8,7 @@ import {
   FaFileAlt,
 } from "react-icons/fa";
 
-export function getFileIcon(filename) {
+function getFileIcon(filename) {
   if (!filename) return "alt";
   const ext = filename.split(".").pop().toLowerCase();
   switch (ext) {

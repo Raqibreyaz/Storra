@@ -21,11 +21,10 @@ import ThemeToggle from "./ThemeToggle";
 import formatSize from "../utils/formatSize.js";
 import { sanitizeText } from "../utils/sanitize.js";
 import { getCurrentUser, logoutSelf, logoutAllDevices } from "../api/user.js";
-import useDriveStore from "../store/driveStore";
 import { confirmDialog } from "../store/uiStore";
 
 // ─── NavItem ────────────────────────────────────────────────────────────────
-function NavItem({ icon: Icon, label, path, active, onClick, collapsed }) {
+function NavItem({ icon: Icon, label, active, onClick, collapsed }) {
   return (
     <button
       onClick={onClick}
@@ -62,9 +61,6 @@ export default function AppShell() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
 
-  // Zustand — for header action buttons
-  const openCreateDir = useDriveStore((s) => s.openCreateDir);
-
   // ─── Current user ────────────────────────────────────────────────────────
   const { data: userData } = useQuery({
     queryKey: ["currentUser"],
@@ -72,7 +68,6 @@ export default function AppShell() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const loggedIn = !!userData;
   const userName = userData ? sanitizeText(userData.name) : "Guest";
   const userEmail = userData?.email ?? "";
   const userRole = userData?.role ?? "User";
@@ -146,7 +141,9 @@ export default function AppShell() {
 
   // Close sidebar on mobile route change
   useEffect(() => {
-    if (window.innerWidth < 768) setSidebarOpen(false);
+    if (window.innerWidth < 768) {
+      setTimeout(() => setSidebarOpen(false), 0);
+    }
   }, [location.pathname]);
 
   const isActive = (prefix) => location.pathname.startsWith(prefix);

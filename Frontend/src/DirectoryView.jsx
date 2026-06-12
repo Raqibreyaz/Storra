@@ -272,8 +272,6 @@ function DirectoryView() {
   const directoryPath =
     dirId && directoryData?.path ? directoryData.path : [];
 
-  const selectedCount = selection.dirs.length + selection.files.length;
-
   return (
     <div
       className="flex-1 min-h-0 overflow-y-auto"

@@ -16,10 +16,14 @@ function RenameModal({
       if (dotIndex > 0) inputRef.current.setSelectionRange(0, dotIndex);
       else inputRef.current.select();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [onClose]);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-[999]" onClick={onClose}>

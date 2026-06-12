@@ -26,7 +26,7 @@ export const createSubscription = async (req, res) => {
     ? await Subscription.findById(user.subscription)
     : null;
 
-  let razorpaySubscriptionId = null;
+  let razorpaySubscriptionId;
   const createNewSubscription =
     !fetchedSubscription ||
     (fetchedSubscription.status === "cancelled" &&
