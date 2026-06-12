@@ -21,7 +21,8 @@ export default function GoogleLoginButton() {
         }}
         text="continue_with"
         size="large"
-        theme="filled_blue"
+        theme="outline"
+        shape="rectangular"
         useOneTap
       />
     </div>

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
+import { FaEnvelope, FaLock, FaKey, FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import AuthLayout from "./components/AuthLayout";
 import { sendUpdatePasswordOtp, updateUserPassword } from "./api/auth.js";
 import useOtpTimer from "./hooks/useOtpTimer.js";
 
@@ -44,96 +46,142 @@ const UpdatePassword = () => {
   const submitLoading = updateMutation.isPending;
   const hasError = Boolean(serverError);
 
-  return (
-    <div className="max-w-[400px] mx-auto p-5">
-      <h2 className="text-center mb-5">Update Password</h2>
+  const inputClass = (isError) => `
+    w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800/50 border rounded-xl text-sm
+    text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+    transition-all duration-200 outline-none
+    ${isError 
+      ? "border-red-300 dark:border-red-500/50 focus:ring-2 focus:ring-red-500/20 focus:border-red-500" 
+      : "border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-500"
+    }
+  `;
 
-      <form className="flex flex-col" onSubmit={handleSubmit}>
-        {/* Email + Send OTP */}
-        <div className="relative mb-5">
-          <label className="block mb-1 font-bold">Email</label>
+  return (
+    <AuthLayout title="Reset Password" subtitle="Enter your email to receive a secure recovery code.">
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        
+        {/* Email & Send OTP Group */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Email address</label>
           <div className="flex gap-2">
-            <input
-              className={`flex-1 p-2 box-border border rounded ${hasError ? "border-red-500" : "border-gray-300"}`}
-              type="email"
-              value={email}
-              onChange={(e) => { 
-                setCustomError("");
-                otpMutation.reset();
-                updateMutation.reset();
-                setEmail(e.target.value); 
-              }}
-              placeholder="Enter your email"
-              required
-            />
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <FaEnvelope />
+              </div>
+              <input
+                className={inputClass(hasError)}
+                type="email"
+                value={email}
+                onChange={(e) => { 
+                  setCustomError("");
+                  otpMutation.reset();
+                  updateMutation.reset();
+                  setEmail(e.target.value); 
+                }}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
             <button
               type="button"
-              className="bg-gray-600 text-white border-none rounded py-2 px-3 cursor-pointer text-sm hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap"
               onClick={handleSendOtp}
               disabled={otpLoading || secondsLeft > 0}
+              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
-              {otpLoading ? "Sending..." : secondsLeft > 0 ? `Resend in ${secondsLeft}s` : "Send OTP"}
+              {otpLoading ? "Sending..." : secondsLeft > 0 ? `Wait ${secondsLeft}s` : "Get Code"}
             </button>
           </div>
-          {otpMsg && <p className="text-green-600 text-[0.75rem] mt-1 font-medium">{otpMsg}</p>}
+          {otpMsg && <p className="text-green-600 dark:text-green-400 text-xs mt-2 ml-1 font-medium">{otpMsg}</p>}
         </div>
 
-        {/* OTP */}
-        <div className="relative mb-5">
-          <label className="block mb-1 font-bold">OTP</label>
-          <input
-            className={`w-full p-2 box-border border rounded ${hasError ? "border-red-500" : "border-gray-300"}`}
-            type="text"
-            value={otp}
-            onChange={(e) => { 
-                setCustomError("");
-                otpMutation.reset();
-                updateMutation.reset();
-                setOtp(e.target.value); 
-            }}
-            placeholder="6-digit OTP"
-            required
-          />
+        {/* OTP Input */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Verification Code</label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+              <FaKey />
+            </div>
+            <input
+              className={inputClass(hasError)}
+              type="text"
+              value={otp}
+              onChange={(e) => { 
+                  setCustomError("");
+                  otpMutation.reset();
+                  updateMutation.reset();
+                  setOtp(e.target.value); 
+              }}
+              placeholder="6-digit code"
+              required
+            />
+          </div>
         </div>
 
         {/* New Password */}
-        <div className="relative mb-5">
-          <label className="block mb-1 font-bold">New Password</label>
-          <input
-            className={`w-full p-2 box-border border rounded ${hasError ? "border-red-500" : "border-gray-300"}`}
-            type="password"
-            value={newPassword}
-            onChange={(e) => { 
-                setCustomError("");
-                otpMutation.reset();
-                updateMutation.reset();
-                setNewPassword(e.target.value); 
-            }}
-            placeholder="6-10 characters"
-            minLength={6}
-            maxLength={10}
-            required
-          />
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">New Password</label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+              <FaLock />
+            </div>
+            <input
+              className={inputClass(hasError)}
+              type="password"
+              value={newPassword}
+              onChange={(e) => { 
+                  setCustomError("");
+                  otpMutation.reset();
+                  updateMutation.reset();
+                  setNewPassword(e.target.value); 
+              }}
+              placeholder="Create a new strong password"
+              minLength={6}
+              maxLength={10}
+              required
+            />
+          </div>
         </div>
 
-        {serverError && <p className="text-red-500 text-[0.8rem] mb-2">{serverError}</p>}
-        {successMsg && <p className="text-green-600 text-[0.8rem] mb-2 font-bold">{successMsg}</p>}
+        {/* Errors & Success Messages */}
+        {serverError && (
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/50 rounded-xl">
+            <p className="text-red-600 dark:text-red-400 text-xs font-medium text-center">{serverError}</p>
+          </div>
+        )}
+        {successMsg && (
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 rounded-xl">
+            <p className="text-emerald-600 dark:text-emerald-400 text-xs font-medium text-center">{successMsg}</p>
+          </div>
+        )}
 
+        {/* Submit Button */}
         <button
           type="submit"
-          className="bg-blue-600 text-white border-none rounded py-2.5 px-4 w-full cursor-pointer text-base hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={submitLoading}
+          className="w-full py-3 px-4 mt-2 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
         >
-          {submitLoading ? "Updating..." : "Update Password"}
+          {submitLoading ? (
+            "Updating Password..."
+          ) : (
+            <>
+              Update Password
+              <FaArrowRight className="text-white/70 group-hover:translate-x-1 transition-transform" />
+            </>
+          )}
         </button>
       </form>
 
-      <p className="text-center mt-4">
-        <Link to="/login" className="text-blue-700 no-underline font-medium hover:underline hover:text-blue-900">
+      {/* Back to Login */}
+      <div className="mt-8 flex justify-center">
+        <Link 
+          to="/login" 
+          className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          <FaArrowLeft className="text-xs" />
           Back to Login
         </Link>
-      </p>
-    </div>
+      </div>
+    </AuthLayout>
   );
 };
 

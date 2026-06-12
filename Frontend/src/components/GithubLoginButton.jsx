@@ -46,7 +46,7 @@ const GithubLoginButton = ({
   return (
     <button
       type="button"
-      className="h-[40px] flex items-center justify-center gap-2 px-3 border border-gray-300 rounded bg-white text-gray-800 text-sm font-semibold cursor-pointer shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] focus:outline-none focus-visible:border-gray-800 focus-visible:ring-2 focus-visible:ring-gray-800/25 disabled:opacity-60 disabled:cursor-not-allowed"
+      className="w-full h-10 flex items-center justify-center gap-2 px-3 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm font-semibold cursor-pointer shadow-sm transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800/25 disabled:opacity-60 disabled:cursor-not-allowed"
       onClick={handleGithubLogin}
       disabled={disabled || loading}
     >
