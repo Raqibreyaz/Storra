@@ -210,7 +210,7 @@ export default function AppShell() {
       {/* ─── Sidebar overlay (mobile) ──────────────────────────────────── */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-20 md:hidden"
+          className="fixed inset-0 bg-black/30 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -219,7 +219,7 @@ export default function AppShell() {
       <aside
         className={`${sidebarW} shrink-0 flex flex-col h-full
           bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
-          transition-all duration-200 overflow-hidden z-30
+          transition-all duration-200 overflow-hidden z-50
           fixed inset-y-0 left-0 md:relative md:inset-auto`}
       >
         {/* Logo */}

@@ -28,9 +28,15 @@ const useDriveStore = create((set, get) => ({
   },
 
   openCreateDir: () =>
-    set((s) => ({ modals: { ...s.modals, createDir: true } })),
+    set((s) => ({
+      modalData: { ...s.modalData, name: "New Folder" },
+      modals: { ...s.modals, createDir: true },
+    })),
   closeCreateDir: () =>
-    set((s) => ({ modals: { ...s.modals, createDir: false } })),
+    set((s) => ({
+      modalData: { ...s.modalData, name: "" },
+      modals: { ...s.modals, createDir: false },
+    })),
 
   openRename: (type, id, name) =>
     set((s) => ({

@@ -367,7 +367,7 @@ function DirectoryView() {
       {/* ─── Modals ─────────────────────────────────────────────────────── */}
       {modals.createDir && (
         <CreateDirectoryModal
-          newDirname={modalData.name || "New Folder"}
+          newDirname={modalData.name}
           setNewDirname={(name) => setModalData((prev) => ({ ...prev, name }))}
           onClose={closeCreateDir}
           onCreateDirectory={handleCreateDirectory}
