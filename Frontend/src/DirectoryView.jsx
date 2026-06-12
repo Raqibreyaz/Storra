@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import DirectoryHeader from "./components/DirectoryHeader";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import CreateDirectoryModal from "./components/CreateDirectoryModal";
 import RenameModal from "./components/RenameModal";
 import ShareModal from "./components/ShareModal";
@@ -8,15 +8,19 @@ import AccessControlModal from "./components/AccessControlModal";
 import DetailsModal from "./components/DetailsModal";
 import DirectoryList from "./components/DirectoryList";
 import FloatingActionBar from "./components/FloatingActionBar";
-import { getDirectory, createDirectory, deleteDirectory, renameDirectory } from "./api/directory.js";
+import DrivePageHeader from "./components/DrivePageHeader";
+import {
+  getDirectory,
+  createDirectory,
+  deleteDirectory,
+  renameDirectory,
+} from "./api/directory.js";
 import { deleteFile, renameFile, getFileUrl } from "./api/file.js";
 import { bulkDeleteItems } from "./api/item.js";
 import { sanitizeText } from "./utils/sanitize.js";
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import useModals from "./hooks/useModals";
-import useSelection from "./hooks/useSelection";
-import useContextMenu from "./hooks/useContextMenu";
 import useUpload from "./hooks/useUpload";
+import useDriveStore from "./store/driveStore";
+import { confirmDialog } from "./store/uiStore";
 
 function DirectoryView() {
   const { dirId, targetUserId } = useParams();
@@ -24,15 +28,39 @@ function DirectoryView() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
 
+  // ─── Store selectors ──────────────────────────────────────────────────────
+  const modals = useDriveStore((s) => s.modals);
+  const modalData = useDriveStore((s) => s.modalData);
+  const selection = useDriveStore((s) => s.selection);
+  const setModalData = useDriveStore((s) => s.setModalData);
+  const closeCreateDir = useDriveStore((s) => s.closeCreateDir);
+  const closeRename = useDriveStore((s) => s.closeRename);
+  const closeShare = useDriveStore((s) => s.closeShare);
+  const closeAccess = useDriveStore((s) => s.closeAccess);
+  const closeDetails = useDriveStore((s) => s.closeDetails);
+  const clearSelection = useDriveStore((s) => s.clearSelection);
+  const resetSelectionForDir = useDriveStore((s) => s.resetSelectionForDir);
+  const toggleSelectAll = useDriveStore((s) => s.toggleSelectAll);
+  const closeContextMenu = useDriveStore((s) => s.closeContextMenu);
+
+  // ─── Current user ─────────────────────────────────────────────────────────
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
-    queryFn: () => import("./api/user.js").then(m => m.getCurrentUser()),
+    queryFn: () => import("./api/user.js").then((m) => m.getCurrentUser()),
     staleTime: 5 * 60 * 1000,
   });
 
-  const isReadOnlyAdmin = targetUserId && currentUser?.role === "Admin" && currentUser?._id !== targetUserId;
+  const isReadOnlyAdmin =
+    targetUserId &&
+    currentUser?.role === "Admin" &&
+    currentUser?._id !== targetUserId;
 
-  const { data: directoryData, isLoading, error: queryError } = useQuery({
+  // ─── Directory data ───────────────────────────────────────────────────────
+  const {
+    data: directoryData,
+    isLoading,
+    error: queryError,
+  } = useQuery({
     queryKey: ["directory", targetUserId || "me", dirId || "root"],
     queryFn: () => getDirectory(dirId, targetUserId),
     retry: false,
@@ -43,45 +71,57 @@ function DirectoryView() {
     setDirNotFound(queryError?.errorCode === "DIR_NOT_FOUND");
   }, [queryError]);
 
-  const invalidateDirectory = () => {
-    queryClient.invalidateQueries({ queryKey: ["directory", targetUserId || "me", dirId || "root"] });
-  };
-  const invalidateUser = () => {
+  // Reset selection whenever directory changes
+  useEffect(() => {
+    resetSelectionForDir();
+  }, [dirId, resetSelectionForDir]);
+
+  // ─── Invalidation helpers ─────────────────────────────────────────────────
+  const invalidateDirectory = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: ["directory", targetUserId || "me", dirId || "root"],
+    });
+  }, [queryClient, targetUserId, dirId]);
+
+  const invalidateUser = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-  };
+  }, [queryClient]);
 
+  // ─── Upload ───────────────────────────────────────────────────────────────
   const {
-    uploadingFile, uploadError, isUploading, progress,
-    handleFileSelect, cancelUpload
-  } = useUpload(dirId, () => {
-    invalidateDirectory();
-    invalidateUser();
-  }, targetUserId);
+    uploadingFile,
+    uploadError,
+    isUploading,
+    progress,
+    handleFileSelect,
+    cancelUpload,
+  } = useUpload(
+    dirId,
+    () => {
+      invalidateDirectory();
+      invalidateUser();
+    },
+    targetUserId
+  );
 
-  const combinedItems = useMemo(() => [
-    ...(uploadingFile ? [uploadingFile] : []),
-    ...(directoryData ? [
-      ...directoryData.directories.map((d) => ({ ...d, isDirectory: true })),
-      ...directoryData.files.map((f) => ({ ...f, isDirectory: false })),
-    ].reverse() : []),
-  ], [uploadingFile, directoryData]);
+  // ─── Combined item list ───────────────────────────────────────────────────
+  const combinedItems = useMemo(
+    () => [
+      ...(uploadingFile ? [uploadingFile] : []),
+      ...(directoryData
+        ? [
+            ...directoryData.directories.map((d) => ({
+              ...d,
+              isDirectory: true,
+            })),
+            ...directoryData.files.map((f) => ({ ...f, isDirectory: false })),
+          ].reverse()
+        : []),
+    ],
+    [uploadingFile, directoryData]
+  );
 
-  const {
-    selectedItems, selectedCount, handleItemClick, toggleSelectAll, clearSelection
-  } = useSelection(combinedItems, dirId);
-
-  const {
-    activeContextMenu, contextMenuPos, handleContextMenu, closeContextMenu
-  } = useContextMenu();
-
-  const {
-    showCreateDir, showRename, showShare, showAccess, showDetails,
-    modalData, openCreateDir, closeCreateDir, openRename, closeRename,
-    openShare, closeShare, openAccess, closeAccess, openDetails, closeDetails,
-    setModalData
-  } = useModals();
-
-  // Mutations
+  // ─── Mutations ────────────────────────────────────────────────────────────
   const createDirMutation = useMutation({
     mutationFn: (dirname) => createDirectory(dirId, dirname, targetUserId),
     onSuccess: () => {
@@ -93,7 +133,9 @@ function DirectoryView() {
 
   const renameMutation = useMutation({
     mutationFn: ({ type, id, name }) =>
-      type === "file" ? renameFile(id, name, targetUserId) : renameDirectory(id, name, targetUserId),
+      type === "file"
+        ? renameFile(id, name, targetUserId)
+        : renameDirectory(id, name, targetUserId),
     onSuccess: () => {
       invalidateDirectory();
       invalidateUser();
@@ -103,7 +145,9 @@ function DirectoryView() {
 
   const deleteMutation = useMutation({
     mutationFn: ({ type, id }) =>
-      type === "file" ? deleteFile(id, targetUserId) : deleteDirectory(id, targetUserId),
+      type === "file"
+        ? deleteFile(id, targetUserId)
+        : deleteDirectory(id, targetUserId),
     onSuccess: () => {
       invalidateDirectory();
       invalidateUser();
@@ -119,63 +163,102 @@ function DirectoryView() {
     },
   });
 
-  // Handlers
-  const handleOpenItem = useCallback((type, id) => {
-    if (type === "directory") navigate(targetUserId ? `/app/admin/users/${targetUserId}/directory/${id}` : `/app/directory/${id}`);
-    else window.location.href = getFileUrl(id, targetUserId);
-  }, [navigate, targetUserId]);
+  // ─── Handlers ────────────────────────────────────────────────────────────
+  const handleOpenItem = useCallback(
+    (type, id) => {
+      if (type === "directory")
+        navigate(
+          targetUserId
+            ? `/app/admin/users/${targetUserId}/directory/${id}`
+            : `/app/directory/${id}`
+        );
+      else window.location.href = getFileUrl(id, targetUserId);
+    },
+    [navigate, targetUserId]
+  );
 
-  // Keyboard shortcuts: Ctrl+A to select all, Escape to clear selection
+  const handleDeleteItem = useCallback(
+    (type, id, name) => {
+      confirmDialog({
+        title: `Delete ${type === "file" ? "File" : "Directory"}`,
+        message: `Are you sure you want to delete ${name}?`,
+        confirmText: "Delete",
+        isDestructive: true,
+        onConfirm: () => deleteMutation.mutate({ type, id })
+      });
+    },
+    [deleteMutation]
+  );
+
+  const handleBulkDelete = useCallback(() => {
+    if (selection.dirs.length + selection.files.length === 0) return;
+    const count = selection.dirs.length + selection.files.length;
+    confirmDialog({
+      title: "Delete Multiple Items",
+      message: `Are you sure you want to delete ${count} selected items?`,
+      confirmText: "Delete All",
+      isDestructive: true,
+      onConfirm: () => {
+        bulkDeleteMutation.mutate({
+          dirs: selection.dirs,
+          files: selection.files,
+        });
+      }
+    });
+  }, [selection, bulkDeleteMutation]);
+
+  const handleCreateDirectory = useCallback(
+    (e) => {
+      e.preventDefault();
+      createDirMutation.mutate(sanitizeText(modalData.name || "New Folder"));
+    },
+    [createDirMutation, modalData.name]
+  );
+
+  const handleRenameSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      renameMutation.mutate({
+        type: modalData.type,
+        id: modalData.id,
+        name: sanitizeText(modalData.name),
+      });
+    },
+    [renameMutation, modalData]
+  );
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
+        return;
       if ((e.ctrlKey || e.metaKey) && e.key === "a") {
         e.preventDefault();
-        toggleSelectAll();
+        toggleSelectAll(combinedItems);
       }
       if (e.key === "Escape") {
         clearSelection();
+        closeContextMenu();
       }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [toggleSelectAll, clearSelection]);
+  }, [toggleSelectAll, clearSelection, closeContextMenu, combinedItems]);
 
-  // Click on empty area to deselect
-  const handleContainerClick = useCallback((e) => {
-    if (e.target === e.currentTarget) {
-      clearSelection();
-    }
-  }, [clearSelection]);
+  // Click on empty area deselects
+  const handleContainerClick = useCallback(
+    (e) => {
+      if (e.target === e.currentTarget) {
+        clearSelection();
+        closeContextMenu();
+      }
+    },
+    [clearSelection, closeContextMenu]
+  );
 
-  const handleDeleteItem = (type, id, name) => {
-    if (confirm(`Delete this ${type === "file" ? "File" : "Directory"}: ${name}?`)) {
-      deleteMutation.mutate({ type, id });
-    }
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedCount === 0) return;
-    if (confirm(`Are you sure you want to delete ${selectedCount} selected items?`)) {
-      bulkDeleteMutation.mutate({ dirs: selectedItems.dirs, files: selectedItems.files });
-    }
-  };
-
-  const handleCreateDirectory = (e) => {
-    e.preventDefault();
-    createDirMutation.mutate(sanitizeText(modalData.name || "New Folder"));
-  };
-
-  const handleRenameSubmit = (e) => {
-    e.preventDefault();
-    renameMutation.mutate({
-      type: modalData.type,
-      id: modalData.id,
-      name: sanitizeText(modalData.name)
-    });
-  };
-
-  const errorMessage = uploadError ||
+  // ─── Derived display values ────────────────────────────────────────────────
+  const errorMessage =
+    uploadError ||
     queryError?.message ||
     createDirMutation.error?.message ||
     renameMutation.error?.message ||
@@ -184,46 +267,124 @@ function DirectoryView() {
 
   const isRoot = directoryData && !directoryData.parentDir;
   const defaultDriveName = targetUserId ? "User's Drive" : "My Drive";
-  const directoryName = (!dirId || isRoot) ? defaultDriveName : directoryData?.name;
-  const directoryPath = dirId && directoryData?.path ? directoryData.path : [];
+  const directoryName =
+    !dirId || isRoot ? defaultDriveName : directoryData?.name;
+  const directoryPath =
+    dirId && directoryData?.path ? directoryData.path : [];
+
+  const selectedCount = selection.dirs.length + selection.files.length;
 
   return (
-    <div className="px-2.5 max-w-[1000px] mx-auto min-h-screen" onClick={handleContainerClick}>
-      {errorMessage && !dirNotFound && (
-        <div className="text-red-500 mb-2">{errorMessage}</div>
-      )}
+    <div
+      className="flex-1 min-h-0 overflow-y-auto"
+      onClick={handleContainerClick}
+    >
+      {/* Hidden file input — lives here so fileInputRef is stable */}
+      <input
+        ref={fileInputRef}
+        id="file-upload"
+        type="file"
+        className="hidden"
+        onChange={handleFileSelect}
+      />
 
-      <DirectoryHeader
+      {/* Emits breadcrumb + action button events to AppShell top bar */}
+      <DrivePageHeader
         directoryName={directoryName}
         directoryPath={directoryPath}
-        onCreateFolderClick={!isReadOnlyAdmin ? openCreateDir : undefined}
-        onUploadFilesClick={!isReadOnlyAdmin ? () => fileInputRef.current.click() : undefined}
-        fileInputRef={fileInputRef}
-        handleFileSelect={handleFileSelect}
+        onCreateFolderClick={
+          !isReadOnlyAdmin
+            ? () => useDriveStore.getState().openCreateDir()
+            : undefined
+        }
+        onUploadFilesClick={
+          !isReadOnlyAdmin ? () => fileInputRef.current?.click() : undefined
+        }
         disabled={dirNotFound || isReadOnlyAdmin}
         targetUserId={targetUserId}
       />
 
-      {showCreateDir && (
+      {/* Error banner */}
+      {errorMessage && !dirNotFound && (
+        <div className="mx-4 mt-3 px-4 py-2.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 rounded-xl text-sm">
+          {errorMessage}
+        </div>
+      )}
+
+      {/* File list area */}
+      <div className="px-4 sm:px-6 pb-24">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center mt-20 gap-3">
+            <div className="w-10 h-10 rounded-full border-[3px] border-blue-200 border-t-blue-600 animate-spin" />
+            <p className="text-sm text-gray-400 dark:text-gray-500">Loading…</p>
+          </div>
+        ) : combinedItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center mt-24 gap-3 select-none">
+            <div className="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-4xl">
+              {dirNotFound ? "🔍" : "📂"}
+            </div>
+            <p className="text-base font-medium text-gray-500 dark:text-gray-400">
+              {dirNotFound
+                ? "Directory not found or you do not have access."
+                : "This folder is empty."}
+            </p>
+            {!dirNotFound && (
+              <p className="text-sm text-gray-400 dark:text-gray-500">
+                Upload files or create a folder to get started.
+              </p>
+            )}
+          </div>
+        ) : (
+          <DirectoryList
+            items={combinedItems}
+            onItemDoubleClick={handleOpenItem}
+            isUploading={isUploading}
+            uploadProgress={progress}
+            cancelUpload={cancelUpload}
+            handleDeleteFile={
+              !isReadOnlyAdmin
+                ? (id, name) => handleDeleteItem("file", id, name)
+                : undefined
+            }
+            handleDeleteDirectory={
+              !isReadOnlyAdmin
+                ? (id, name) => handleDeleteItem("directory", id, name)
+                : undefined
+            }
+            isReadOnlyAdmin={isReadOnlyAdmin}
+          />
+        )}
+      </div>
+
+      <FloatingActionBar
+        totalCount={combinedItems.length}
+        onDelete={
+          !isReadOnlyAdmin && !targetUserId ? handleBulkDelete : undefined
+        }
+        onSelectAll={() => toggleSelectAll(combinedItems)}
+      />
+
+      {/* ─── Modals ─────────────────────────────────────────────────────── */}
+      {modals.createDir && (
         <CreateDirectoryModal
           newDirname={modalData.name || "New Folder"}
-          setNewDirname={(name) => setModalData(prev => ({ ...prev, name }))}
+          setNewDirname={(name) => setModalData((prev) => ({ ...prev, name }))}
           onClose={closeCreateDir}
           onCreateDirectory={handleCreateDirectory}
         />
       )}
 
-      {showRename && (
+      {modals.rename && (
         <RenameModal
           renameType={modalData.type}
           renameValue={modalData.name}
-          setRenameValue={(name) => setModalData(prev => ({ ...prev, name }))}
+          setRenameValue={(name) => setModalData((prev) => ({ ...prev, name }))}
           onClose={closeRename}
           onRenameSubmit={handleRenameSubmit}
         />
       )}
 
-      {showShare && (
+      {modals.share && (
         <ShareModal
           fileId={modalData.id}
           fileName={modalData.name}
@@ -231,65 +392,27 @@ function DirectoryView() {
         />
       )}
 
-      {showAccess && (
+      {modals.access && (
         <AccessControlModal
           fileId={modalData.id}
           fileName={modalData.name}
           currentAccess={modalData.data}
           dirId={dirId}
           onClose={closeAccess}
-          onAccessChanged={(newAccess) => setModalData(prev => ({ ...prev, data: newAccess }))}
+          onAccessChanged={(newAccess) =>
+            setModalData((prev) => ({ ...prev, data: newAccess }))
+          }
         />
       )}
 
-      {showDetails && modalData.data && (
+      {modals.details && modalData.data && (
         <DetailsModal
           item={modalData.data}
-          directoryName={dirId ? directoryName : '/'}
+          directoryName={dirId ? directoryName : "/"}
           directoryPath={directoryPath}
           onClose={closeDetails}
         />
       )}
-
-      {isLoading ? (
-        <div className="flex justify-center mt-10">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      ) : combinedItems.length === 0 ? (
-        <p className="text-center italic mt-10 text-gray-500 dark:text-gray-400 transition-colors">
-          {dirNotFound
-            ? "Directory not found or you do not have access to it!"
-            : "This folder is empty. Upload files or create a folder to see some data."}
-        </p>
-      ) : (
-        <DirectoryList
-          items={combinedItems}
-          onItemClick={handleItemClick}
-          onItemDoubleClick={handleOpenItem}
-          activeContextMenu={activeContextMenu}
-          contextMenuPos={contextMenuPos}
-          handleContextMenu={handleContextMenu}
-          closeContextMenu={closeContextMenu}
-          isUploading={isUploading}
-          uploadProgress={progress}
-          cancelUpload={cancelUpload}
-          handleDeleteFile={!isReadOnlyAdmin ? (id, name) => handleDeleteItem("file", id, name) : undefined}
-          handleDeleteDirectory={!isReadOnlyAdmin ? (id, name) => handleDeleteItem("directory", id, name) : undefined}
-          handleShowDetails={openDetails}
-          openRenameModal={!isReadOnlyAdmin ? openRename : undefined}
-          onShare={!isReadOnlyAdmin ? openShare : undefined}
-          onManageAccess={!isReadOnlyAdmin ? openAccess : undefined}
-          selectedItems={selectedItems}
-        />
-      )}
-
-      <FloatingActionBar
-        selectedCount={selectedCount}
-        totalCount={combinedItems.length}
-        onClear={clearSelection}
-        onDelete={!isReadOnlyAdmin && !targetUserId ? handleBulkDelete : undefined}
-        onSelectAll={toggleSelectAll}
-      />
     </div>
   );
 }

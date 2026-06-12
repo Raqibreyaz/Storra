@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import ErrorBoundary from "./components/ErrorBoundary";
+import AppShell from "./components/AppShell";
 import DirectoryView from "./DirectoryView";
 import Register from "./Register";
 import Login from "./Login";
@@ -38,39 +39,24 @@ const router = createBrowserRouter([
     path: "/plans",
     element: <Plans />,
   },
+  // ─── /app routes — wrapped in AppShell layout ─────────────────────────────
   {
     path: "/app",
-    element: <DirectoryView />,
-  },
-  {
-    path: "/app/directory/:dirId",
-    element: <DirectoryView />,
-  },
-  {
-    path: "/app/admin/users/:targetUserId",
-    element: <DirectoryView />,
-  },
-  {
-    path: "/app/admin/users/:targetUserId/directory/:dirId",
-    element: <DirectoryView />,
-  },
-  {
-    path: "/app/admin",
-    element: <AdminDashboard />,
-  },
-  {
-    path: "/app/admin/:section",
-    element: <AdminDashboard />,
-  },
-  {
-    path: "/app/shared",
-    element: <SharedWithMePage />,
-  },
-  {
-    path: "/app/dashboard",
-    element: <Dashboard />,
+    element: <AppShell />,
+    children: [
+      { index: true, element: <DirectoryView /> },
+      { path: "directory/:dirId", element: <DirectoryView /> },
+      { path: "admin/users/:targetUserId", element: <DirectoryView /> },
+      { path: "admin/users/:targetUserId/directory/:dirId", element: <DirectoryView /> },
+      { path: "admin", element: <AdminDashboard /> },
+      { path: "admin/:section", element: <AdminDashboard /> },
+      { path: "shared", element: <SharedWithMePage /> },
+      { path: "dashboard", element: <Dashboard /> },
+    ],
   },
 ]);
+
+import GlobalUI from "./components/GlobalUI";
 
 function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "<client_id>";
@@ -78,6 +64,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <GoogleOAuthProvider clientId={clientId}>
+          <GlobalUI />
           <RouterProvider router={router} />
         </GoogleOAuthProvider>
       </ThemeProvider>

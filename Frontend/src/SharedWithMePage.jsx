@@ -11,6 +11,7 @@ import { sanitizeText } from "./utils/sanitize.js";
 import formatSize from "./utils/formatSize";
 import useModals from "./hooks/useModals";
 import useContextMenu from "./hooks/useContextMenu";
+import { confirmDialog } from "./store/uiStore";
 
 export default function SharedWithMePage() {
     const navigate = useNavigate();
@@ -52,9 +53,13 @@ export default function SharedWithMePage() {
     };
 
     const handleDeleteFile = (fileId) => {
-        if (confirm("Delete this file?")) {
-            deleteMutation.mutate(fileId);
-        }
+        confirmDialog({
+            title: "Remove Shared File",
+            message: "Are you sure you want to remove this file from your shared view?",
+            confirmText: "Remove",
+            isDestructive: true,
+            onConfirm: () => deleteMutation.mutate(fileId)
+        });
     };
 
     const handleRenameSubmit = (e) => {
@@ -68,13 +73,11 @@ export default function SharedWithMePage() {
     const menuItemClass = "px-5 py-2 cursor-pointer whitespace-nowrap text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors";
 
     return (
-        <div className="max-w-[800px] mx-auto p-5 transition-colors bg-white dark:bg-gray-900 min-h-screen">
-            <header className="flex items-center gap-3 mb-6 border-b-2 border-gray-300 dark:border-gray-700 pb-3 transition-colors">
-                <button className="bg-none border-none text-xl cursor-pointer text-blue-600 flex items-center p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => navigate("/app")}>
-                    <FaArrowLeft />
-                </button>
-                <h1 className="m-0 text-3xl dark:text-white">Shared with Me</h1>
-            </header>
+        <div className="max-w-3xl mx-auto p-5 transition-colors">
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Shared with Me</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Files others have shared with you</p>
+            </div>
 
             {(error || deleteMutation.error || renameMutation.error) && (
                 <div className="text-red-500 mb-2">

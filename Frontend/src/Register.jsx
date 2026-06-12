@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "./store/uiStore";
 import GoogleLoginButton from "./components/GoogleLoginButton";
 import GithubLoginButton from "./components/GithubLoginButton";
 import { sendRegisterOtp, registerWithOtp } from "./api/auth.js";
@@ -39,7 +40,7 @@ const Register = () => {
 
     // Only email is needed to send OTP
     if (!formData.email) {
-      alert("Email is required to send OTP.");
+      toast.error("Email is required to send OTP.");
       return;
     }
 
@@ -51,7 +52,7 @@ const Register = () => {
 
     // All fields required for final registration
     if (!formData.name || !formData.email || !formData.password || !otp) {
-      alert("Name, Email, Password, and OTP are all required to register.");
+      toast.error("Name, Email, Password, and OTP are all required to register.");
       return;
     }
 

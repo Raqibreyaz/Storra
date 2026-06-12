@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import {
-  FaArrowLeft, FaCloud, FaCrown,
+  FaCloud, FaCrown,
   FaEnvelope, FaGoogle, FaGithub, FaExchangeAlt,
   FaTimes, FaCheckCircle, FaExclamationTriangle, FaClock,
   FaPause, FaPlay, FaBan, FaHourglassHalf, FaCreditCard,
 } from "react-icons/fa";
+
 import { getCurrentUser } from "./api/user.js";
 import {
   getSubscription, cancelSubscription,
@@ -504,8 +506,8 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6">
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="h-8 w-32 bg-gray-200 rounded animate-pulse mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-2">
@@ -522,7 +524,7 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center transition-colors">
+      <div className="flex items-center justify-center p-12">
         <div className="bg-red-50 text-red-700 py-4 px-6 rounded-xl text-sm max-w-md text-center">
           {error.message || "Something went wrong. Please try again."}
         </div>
@@ -531,17 +533,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors">
-      <header className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-4">
-        <button
-          className="flex items-center gap-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors
-            bg-transparent border-none cursor-pointer text-sm font-medium"
-          onClick={() => navigate("/app")}
-        >
-          <FaArrowLeft className="text-xs" />
-          Back to Drive
-        </button>
-      </header>
+    <div className="transition-colors">
 
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-6">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight transition-colors">

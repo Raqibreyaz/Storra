@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { loginWithGoogle } from "../api/auth.js";
+import { toast } from "../store/uiStore";
 
 export default function GoogleLoginButton() {
   const navigate = useNavigate();
@@ -12,11 +13,11 @@ export default function GoogleLoginButton() {
             await loginWithGoogle(credential);
             navigate("/app");
           } catch (err) {
-            alert(err.message || "Google login failed");
+            toast.error(err.message || "Google login failed");
           }
         }}
         onError={function () {
-          alert("Some Error Occured!");
+          toast.error("Some Error Occured!");
         }}
         text="continue_with"
         size="large"

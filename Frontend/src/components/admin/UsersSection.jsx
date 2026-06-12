@@ -10,6 +10,7 @@ import {
   changeUserRole as apiChangeUserRole,
 } from "../../api/user.js";
 import formatSize from "../../utils/formatSize.js";
+import { confirmDialog } from "../../store/uiStore";
 
 const ROLES = ["Owner", "Admin", "User"];
 const ROLE_LEVEL = { Owner: 0, Admin: 1, User: 2 };
@@ -73,38 +74,51 @@ export default function UsersSection() {
   }
 
   const logoutUser = (userId) => {
-    if (!confirm("You are about to logout this user!")) return;
-    logoutMutation.mutate(userId);
+    confirmDialog({
+      title: "Logout User",
+      message: "You are about to logout this user!",
+      confirmText: "Logout",
+      isDestructive: true,
+      onConfirm: () => logoutMutation.mutate(userId)
+    });
   };
 
   const softDeleteUser = (userId) => {
-    if (
-      !confirm(
-        "Soft-delete this user? Their account will be deactivated but can be recovered.",
-      )
-    )
-      return;
-    softDeleteMutation.mutate(userId);
+    confirmDialog({
+      title: "Suspend User",
+      message: "Soft-delete this user? Their account will be deactivated but can be recovered.",
+      confirmText: "Suspend",
+      isDestructive: true,
+      onConfirm: () => softDeleteMutation.mutate(userId)
+    });
   };
 
   const hardDeleteUser = (userId) => {
-    if (
-      !confirm(
-        "⚠️ PERMANENTLY delete this user and ALL their data? This cannot be undone!",
-      )
-    )
-      return;
-    hardDeleteMutation.mutate(userId);
+    confirmDialog({
+      title: "Permanently Delete User",
+      message: "⚠️ PERMANENTLY delete this user and ALL their data? This cannot be undone!",
+      confirmText: "Delete Permanently",
+      isDestructive: true,
+      onConfirm: () => hardDeleteMutation.mutate(userId)
+    });
   };
 
   const recoverUser = (userId) => {
-    if (!confirm("Recover this user?")) return;
-    recoverMutation.mutate(userId);
+    confirmDialog({
+      title: "Recover User",
+      message: "Recover this user?",
+      confirmText: "Recover",
+      onConfirm: () => recoverMutation.mutate(userId)
+    });
   };
 
   const changeRole = (userId, newRole) => {
-    if (!confirm(`Change this user's role to ${newRole}?`)) return;
-    changeRoleMutation.mutate({ userId, newRole });
+    confirmDialog({
+      title: "Change Role",
+      message: `Change this user's role to ${newRole}?`,
+      confirmText: "Change",
+      onConfirm: () => changeRoleMutation.mutate({ userId, newRole })
+    });
   };
 
   const assignableRoles = getAssignableRoles();

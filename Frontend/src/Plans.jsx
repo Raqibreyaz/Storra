@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { createSubscription, getPlans, getSubscription, updateSubscription } from "./api/plan.js";
 import { PLAN_ICONS, isSubscriptionEffectivelyFree } from "./utils/subscriptionHelpers.js";
+import { confirmDialog, toast } from "./store/uiStore";
 
 const PLAN_FEATURES = {
     Free: [
@@ -207,7 +208,7 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
 
     const onSubscribe = async () => {
         if (!window.Razorpay) {
-            alert("Razorpay SDK is still loading. Please try again in a moment.");
+            toast.error("Razorpay SDK is still loading. Please try again in a moment.");
             return;
         }
 
@@ -240,9 +241,12 @@ function PlanCard({ plan, isYearly, isPopular, currentSubscription, onPostPaymen
         if (buttonConfig.action === "subscribe") {
             onSubscribe();
         } else if (buttonConfig.action === "update") {
-            if (confirm(`Are you sure you want to ${buttonConfig.label.toLowerCase()} to the ${name} plan?`)) {
-                updateMutation.mutate(activeVariant.planKey);
-            }
+            confirmDialog({
+                title: "Update Plan",
+                message: `Are you sure you want to ${buttonConfig.label.toLowerCase()} to the ${name} plan?`,
+                confirmText: "Update",
+                onConfirm: () => updateMutation.mutate(activeVariant.planKey)
+            });
         } else if (buttonConfig.action === "navigate") {
             navigate("/app");
         }

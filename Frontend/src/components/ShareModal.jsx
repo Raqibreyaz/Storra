@@ -2,11 +2,11 @@ import { useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSharedUsers, shareFile, revokeShare } from "../api/share.js";
+import { confirmDialog, toast } from "../store/uiStore";
 
 function ShareModal({ fileId, fileName, onClose }) {
     const [userEmail, setUserEmail] = useState("");
     const [permission, setPermission] = useState("View");
-    const [successMsg, setSuccessMsg] = useState("");
     const queryClient = useQueryClient();
 
     const { data: sharedUsers = [], isLoading, error } = useQuery({
@@ -21,7 +21,7 @@ function ShareModal({ fileId, fileName, onClose }) {
     const shareMutation = useMutation({
         mutationFn: () => shareFile(fileId, userEmail, permission),
         onSuccess: () => {
-            setSuccessMsg(`Shared with ${userEmail}!`);
+            toast.success(`Shared with ${userEmail}!`);
             setUserEmail("");
             invalidateSharedUsers();
         },
@@ -29,18 +29,22 @@ function ShareModal({ fileId, fileName, onClose }) {
 
     const revokeMutation = useMutation({
         mutationFn: (email) => revokeShare(fileId, email),
-        onSuccess: invalidateSharedUsers,
+        onSuccess: () => toast.success("Access revoked."),
     });
 
     function handleShare(e) {
         e.preventDefault();
-        setSuccessMsg("");
         shareMutation.mutate();
     }
 
     function handleRevoke(email) {
-        if (!confirm(`Revoke access for ${email}?`)) return;
-        revokeMutation.mutate(email);
+        confirmDialog({
+            title: "Revoke Access",
+            message: `Revoke access for ${email}?`,
+            confirmText: "Revoke",
+            isDestructive: true,
+            onConfirm: () => revokeMutation.mutate(email)
+        });
     }
 
     return (
@@ -81,7 +85,6 @@ function ShareModal({ fileId, fileName, onClose }) {
                         {error?.message || shareMutation.error?.message || revokeMutation.error?.message}
                     </p>
                 )}
-                {successMsg && <p className="text-green-700 text-[0.85rem] mt-2">{successMsg}</p>}
 
                 {sharedUsers.length > 0 && (
                     <div className="mt-4 border-t border-gray-100 dark:border-gray-700 pt-3 transition-colors">
