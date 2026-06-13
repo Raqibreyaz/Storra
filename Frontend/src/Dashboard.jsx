@@ -90,8 +90,8 @@ const ACTION_BTN_VARIANTS = {
 
 function actionBtn(variant) {
   const base =
-    "flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm " +
-    "transition-colors border disabled:opacity-50";
+    "flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-medium text-sm " +
+    "transition-colors border disabled:opacity-50 w-full sm:w-auto";
   return `${base} ${ACTION_BTN_VARIANTS[variant]}`;
 }
 
@@ -177,7 +177,7 @@ function ProfileCard({ user }) {
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-colors">
       <div className="h-24 bg-gradient-to-r from-blue-500 via-violet-500 to-purple-600 relative">
         <div className="absolute -bottom-10 left-6">
-          <div className="w-20 h-20 rounded-full border-4 border-white bg-white shadow-lg flex items-center justify-center overflow-hidden">
+          <div className="w-20 h-20 rounded-full border-4 border-white bg-white dark:border-gray-800 dark:bg-gray-800 shadow-lg flex items-center justify-center overflow-hidden">
             {user.picture ? (
               <ProfileImage src={user.picture} />
             ) : (
@@ -190,12 +190,12 @@ function ProfileCard({ user }) {
       </div>
 
       <div className="pt-14 px-6 pb-6">
-        <div className="flex items-start justify-between mb-1">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">{user.name}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors">{user.email}</p>
+        <div className="flex items-start justify-between gap-4 mb-1">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors truncate" title={user.name}>{user.name}</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors truncate" title={user.email}>{user.email}</p>
           </div>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 whitespace-nowrap">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 whitespace-nowrap shrink-0">
             {user.role}
           </span>
         </div>
@@ -274,9 +274,9 @@ function SubscriptionCard({
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-colors">
       {/* Header */}
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 transition-colors">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white shadow-md shrink-0">
               <PlanIcon />
             </div>
             <div>
@@ -292,19 +292,21 @@ function SubscriptionCard({
           </div>
 
           {/* Status badge */}
-          {statusConfig ? (
-            <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${statusConfig.color}`}>
-              <statusConfig.icon className="text-[10px]" />
-              {isCancelledAtEnd
-                ? `Cancels ${formatDate(subscription.currentPeriodEnd)}`
-                : statusConfig.label}
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-              <FaCloud className="text-[10px]" />
-              Free Plan
-            </span>
-          )}
+          <div className="w-fit">
+            {statusConfig ? (
+              <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${statusConfig.color} whitespace-nowrap`}>
+                <statusConfig.icon className="text-[10px]" />
+                {isCancelledAtEnd
+                  ? `Cancels ${formatDate(subscription.currentPeriodEnd)}`
+                  : statusConfig.label}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                <FaCloud className="text-[10px]" />
+                Free Plan
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -340,7 +342,7 @@ function SubscriptionCard({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-4 mb-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
               <DetailItem label="Storage Quota" value={formatSize(subscription.storageQuotaBytes)} />
               <DetailItem
                 label="Billing Cycle"
@@ -349,6 +351,7 @@ function SubscriptionCard({
               <DetailItem
                 label="Current Period"
                 value={`${formatDate(subscription.currentPeriodStart)} – ${formatDate(subscription.currentPeriodEnd)}`}
+                className="col-span-1 sm:col-span-2"
               />
               <DetailItem
                 label="Next Billing"
@@ -436,9 +439,9 @@ function SubscriptionCard({
 }
 
 
-function DetailItem({ label, value }) {
+function DetailItem({ label, value, className = "" }) {
   return (
-    <div>
+    <div className={className}>
       <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 transition-colors">
         {label}
       </p>

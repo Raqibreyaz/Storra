@@ -22,6 +22,7 @@ import formatSize from "../utils/formatSize.js";
 import { sanitizeText } from "../utils/sanitize.js";
 import { getCurrentUser, logoutSelf, logoutAllDevices } from "../api/user.js";
 import { confirmDialog } from "../store/uiStore";
+import useDriveStore from "../store/driveStore";
 
 // ─── NavItem ────────────────────────────────────────────────────────────────
 function NavItem({ icon: Icon, label, active, onClick, collapsed }) {
@@ -195,9 +196,34 @@ export default function AppShell() {
     },
   ];
 
-  const sidebarW = sidebarOpen ? "w-56" : "w-14";
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // ─── Context menu outside click & Escape key ──────────────────────────────
+  const closeContextMenu = useDriveStore((s) => s.closeContextMenu);
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      closeContextMenu();
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        closeContextMenu();
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [closeContextMenu]);
+
   // CSS custom property so FloatingActionBar can centre itself in the content area
-  const sidebarPx = sidebarOpen ? 224 : 56; // 14rem = 224px, 3.5rem = 56px
+  const sidebarPx = isMobile ? 0 : (sidebarOpen ? 224 : 56); // 14rem = 224px, 3.5rem = 56px
 
   return (
     <div
@@ -214,10 +240,11 @@ export default function AppShell() {
 
       {/* ─── Sidebar ──────────────────────────────────────────────────── */}
       <aside
-        className={`${sidebarW} shrink-0 flex flex-col h-full
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col h-full
           bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
-          transition-all duration-200 overflow-hidden z-50
-          fixed inset-y-0 left-0 md:relative md:inset-auto`}
+          transition-all duration-200 overflow-hidden
+          md:relative md:inset-auto md:translate-x-0
+          ${sidebarOpen ? "w-56 translate-x-0" : "w-56 -translate-x-full md:w-14 md:translate-x-0"}`}
       >
         {/* Logo */}
         <div
@@ -335,10 +362,7 @@ export default function AppShell() {
       </aside>
 
       {/* ─── Main content area ─────────────────────────────────────────── */}
-      <div
-        className={`flex-1 flex flex-col min-h-0 min-w-0 transition-all duration-200
-          ${ sidebarOpen ? "ml-56 md:ml-0" : "ml-14 md:ml-0" }`}
-      >
+      <div className="flex-1 flex flex-col min-h-0 min-w-0 transition-all duration-200">
         {/* ─── Top bar ──────────────────────────────────────────────────── */}
         <header className="h-14 shrink-0 flex items-center gap-3 px-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 z-10">
           {/* Hamburger */}
@@ -395,7 +419,7 @@ function BreadcrumbSlot() {
   const { navigate, targetUserId, directoryPath, directoryName } = crumb;
 
   return (
-    <div className="flex items-center gap-1 text-sm font-medium overflow-x-auto hide-scrollbar">
+    <div className="flex items-center gap-1 text-sm font-medium overflow-x-auto hide-scrollbar min-w-0 max-w-[50vw] sm:max-w-[70vw] md:max-w-none">
       <button
         className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap shrink-0"
         onClick={() =>

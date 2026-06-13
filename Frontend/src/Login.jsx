@@ -180,7 +180,7 @@ const Login = () => {
       </div>
 
       {/* OAuth buttons */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="flex flex-col gap-3">
         <GoogleLoginButton />
         <GithubLoginButton />
       </div>

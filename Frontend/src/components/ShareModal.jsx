@@ -90,19 +90,25 @@ function ShareModal({ fileId, fileName, onClose }) {
                     <div className="mt-4 border-t border-gray-100 dark:border-gray-700 pt-3 transition-colors">
                         <h3 className="m-0 mb-2 text-[0.95rem] text-gray-500 dark:text-gray-400">People with access</h3>
                         {sharedUsers.map((entry) => (
-                            <div key={entry._id} className="flex items-center justify-between py-1.5 border-b border-gray-100 dark:border-gray-700 transition-colors">
-                                <div className="flex flex-col">
-                                    <span className="font-medium text-[0.9rem] dark:text-white">{entry.user?.name || "Unknown"}</span>
-                                    <span className="text-[0.8rem] text-gray-500 dark:text-gray-400">{entry.user?.email || ""}</span>
+                            <div key={entry._id} className="flex items-center justify-between gap-4 py-1.5 border-b border-gray-100 dark:border-gray-700 transition-colors">
+                                <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="font-medium text-[0.9rem] dark:text-white truncate" title={entry.user?.name || "Unknown"}>
+                                        {entry.user?.name || "Unknown"}
+                                    </span>
+                                    <span className="text-[0.8rem] text-gray-500 dark:text-gray-400 truncate" title={entry.user?.email || ""}>
+                                        {entry.user?.email || ""}
+                                    </span>
                                 </div>
-                                <span className="text-[0.8rem] text-sky-700 capitalize">{entry.permission}</span>
-                                <button
-                                    className="bg-none border-none text-red-700 dark:text-red-400 cursor-pointer text-[0.85rem] py-1 px-2 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-                                    title="Revoke access"
-                                    onClick={() => handleRevoke(entry.user?.email)}
-                                >
-                                    <FaTrash />
-                                </button>
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <span className="text-[0.8rem] text-sky-700 dark:text-sky-400 capitalize whitespace-nowrap">{entry.permission}</span>
+                                    <button
+                                        className="bg-none border-none text-red-700 dark:text-red-400 cursor-pointer text-[0.85rem] py-1 px-2 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shrink-0"
+                                        title="Revoke access"
+                                        onClick={() => handleRevoke(entry.user?.email)}
+                                    >
+                                        <FaTrash />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>

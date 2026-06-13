@@ -24,12 +24,12 @@ export default function GlobalUI() {
   return (
     <>
       {/* ─── Toasts ──────────────────────────────────────────────────────── */}
-      <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+      <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[9999] flex flex-col gap-2 pointer-events-none items-center sm:items-end">
         {toasts.map((t) => (
           <div
             key={t.id}
             className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border animate-in fade-in slide-in-from-top-4 duration-300
-              bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-sm"
+              bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 w-full sm:max-w-sm"
           >
             {t.type === "success" && <CheckCircle className="text-green-500 shrink-0" size={18} />}
             {t.type === "error" && <AlertCircle className="text-red-500 shrink-0" size={18} />}

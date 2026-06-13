@@ -13,16 +13,16 @@ function FloatingActionBar({ totalCount, onDelete, onSelectAll }) {
 
   return (
     <div
-      className="left-1/2 fixed bottom-6 right-0 z-20 pointer-events-none transition-all duration-200 flex justify-center px-4"
+      className="fixed bottom-6 left-0 right-0 z-20 pointer-events-none transition-all duration-200 flex justify-center px-4"
       style={{
-        // left: "var(--sidebar-w, 0px)",
+        left: "var(--sidebar-w, 0px)",
       }}
     >
       <div
         className="pointer-events-auto flex items-center gap-2 sm:gap-3 px-3.5 sm:px-5 py-2 sm:py-2.5
           bg-gray-900/95 dark:bg-gray-800/95 text-white rounded-2xl
           shadow-2xl border border-gray-700 dark:border-gray-600
-          backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-200 max-w-full overflow-x-auto hide-scrollbar"
+          backdrop-blur-md animate-in fade-in slide-in-from-bottom-simple duration-200 max-w-full overflow-x-auto hide-scrollbar"
       >
         {/* Count badge */}
         <div className="flex items-center gap-1.5 sm:gap-2 pr-2.5 sm:pr-3 border-r border-gray-700">

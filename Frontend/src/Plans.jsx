@@ -434,7 +434,7 @@ const Plans = () => {
                 </p>
 
                 {/* Billing toggle */}
-                <div className="flex items-center justify-center gap-3 mt-8">
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-8">
                     <span
                         className={`text-sm font-semibold transition-colors ${!isYearly ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}
                     >
@@ -456,7 +456,7 @@ const Plans = () => {
                         Yearly
                     </span>
                     {isYearly && (
-                        <span className="text-xs font-bold text-green-700 bg-green-100 px-2.5 py-1 rounded-full animate-bounce">
+                        <span className="text-xs font-bold text-green-700 bg-green-100 px-2.5 py-1 rounded-full animate-bounce shrink-0">
                             Save up to 19%
                         </span>
                     )}

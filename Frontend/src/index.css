@@ -30,6 +30,16 @@
   animation-duration: 0.2s;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
+/* Simple slide-in animation (no horizontal offset) */
+@keyframes slide-in-from-bottom-simple {
+  from { transform: translateY(1rem); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.slide-in-from-bottom-simple {
+  animation-name: slide-in-from-bottom-simple;
+  animation-duration: 0.2s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }

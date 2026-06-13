@@ -59,7 +59,7 @@ export default function Hero() {
 
             <div className="flex h-72">
               {/* Sidebar */}
-              <aside className="w-44 bg-gray-50 dark:bg-gray-800/60 border-r border-gray-200 dark:border-white/5 p-3 flex flex-col gap-1 transition-colors">
+              <aside className="hidden sm:flex w-44 bg-gray-50 dark:bg-gray-800/60 border-r border-gray-200 dark:border-white/5 p-3 flex-col gap-1 transition-colors">
                 <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">My Drive</p>
                 {["📁 Projects", "📁 Photos", "📁 Backups", "📁 Shared", "📄 Resume.pdf"].map((item) => (
                   <div
@@ -120,7 +120,7 @@ export default function Hero() {
           </div>
 
           {/* Floating badge */}
-          <div className="absolute -bottom-4 -left-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 shadow-xl shadow-gray-200/50 dark:shadow-black/60 text-xs text-gray-700 dark:text-gray-300 flex items-center gap-2 transition-colors">
+          <div className="absolute -bottom-4 left-4 sm:-left-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 shadow-xl shadow-gray-200/50 dark:shadow-black/60 text-xs text-gray-700 dark:text-gray-300 flex items-center gap-2 transition-colors">
             <span className="text-green-500 dark:text-green-400 text-base">✓</span> Quota enforced server-side
           </div>
         </div>

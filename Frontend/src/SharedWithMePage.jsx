@@ -38,7 +38,7 @@ export default function SharedWithMePage() {
     });
 
     const {
-        activeContextMenu, contextMenuPos, handleContextMenu
+        activeContextMenu, contextMenuPos, handleContextMenu, closeContextMenu
     } = useContextMenu();
 
     const {
@@ -119,20 +119,20 @@ export default function SharedWithMePage() {
                                     onClick={() => handleFileClick(fileId)}
                                     onContextMenu={(e) => handleContextMenu(e, fileId)}
                                 >
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1 mr-3">
                                         <FileIcon filename={fileName} isDirectory={false} className="text-xl shrink-0" />
-                                        <div className="flex flex-col">
-                                            <span className="font-medium text-gray-800 dark:text-white transition-colors">{fileName}</span>
+                                        <div className="flex flex-col min-w-0 flex-1">
+                                            <span className="font-medium text-gray-800 dark:text-white transition-colors truncate" title={fileName}>{fileName}</span>
                                             <span className="text-[0.8rem] text-gray-500 dark:text-gray-400 transition-colors">{formatSize(entry.file?.size)}</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="flex items-center gap-1 py-1 px-2.5 rounded-xl text-[0.8rem] font-medium bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 transition-colors">
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <span className="flex items-center gap-1 py-1 px-2.5 rounded-xl text-[0.8rem] font-medium bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 transition-colors shrink-0">
                                             {isEditor ? (<><FaEdit /> Editor</>) : (<><FaEye /> Viewer</>)}
                                         </span>
                                         <div
-                                            className="flex items-center justify-center text-lg cursor-pointer text-gray-500 dark:text-gray-400 rounded-full p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                            onClick={(e) => handleContextMenu(e, fileId)}
+                                            className="flex items-center justify-center text-lg cursor-pointer text-gray-500 dark:text-gray-400 rounded-full p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+                                            onClick={(e) => { e.stopPropagation(); handleContextMenu(e, fileId); }}
                                         >
                                             <BsThreeDotsVertical />
                                         </div>
@@ -140,18 +140,18 @@ export default function SharedWithMePage() {
 
                                 {activeContextMenu === fileId && (
                                     <div className="fixed bg-white dark:bg-gray-800 shadow-md rounded z-[999] py-1 border dark:border-gray-700 transition-colors" style={{ top: contextMenuPos.y, left: contextMenuPos.x }}>
-                                        <div className={menuItemClass} onClick={(e) => { e.stopPropagation(); window.open(getFileUrl(fileId), "_blank"); }}>
+                                        <div className={menuItemClass} onClick={(e) => { e.stopPropagation(); window.open(getFileUrl(fileId), "_blank"); closeContextMenu(); }}>
                                             Download
                                         </div>
                                         {isEditor && (
                                             <>
-                                                <div className={menuItemClass} onClick={(e) => { e.stopPropagation(); openRename("file", fileId, fileName); }}>
+                                                <div className={menuItemClass} onClick={(e) => { e.stopPropagation(); openRename("file", fileId, fileName); closeContextMenu(); }}>
                                                     Rename
                                                 </div>
-                                                <div className={menuItemClass} onClick={(e) => { e.stopPropagation(); openShare(fileId, fileName); }}>
+                                                <div className={menuItemClass} onClick={(e) => { e.stopPropagation(); openShare(fileId, fileName); closeContextMenu(); }}>
                                                     Share
                                                 </div>
-                                                <div className={menuItemClass} onClick={(e) => { e.stopPropagation(); handleDeleteFile(fileId); }}>
+                                                <div className={menuItemClass} onClick={(e) => { e.stopPropagation(); handleDeleteFile(fileId); closeContextMenu(); }}>
                                                     Delete
                                                 </div>
                                             </>

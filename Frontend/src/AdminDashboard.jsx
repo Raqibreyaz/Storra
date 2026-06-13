@@ -68,14 +68,14 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tab bar */}
-        <div className="flex items-center gap-1 -mb-px">
+        <div className="flex items-center gap-1 -mb-px overflow-x-auto hide-scrollbar">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => navigate(`/app/admin/${tab.id}`)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-150 rounded-t-lg
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-150 rounded-t-lg shrink-0
                   ${
                     isActive
                       ? "border-violet-500 text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/15"
