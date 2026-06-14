@@ -66,8 +66,8 @@ export const blockFileUpload = (req, res, next) => {
 export const blockFreePlanUpgrade = (req, res, next) => {
   const appSettings = req.appSettings;
   // allow on non-subscription route
-  if (!req.body.planKey || !appSettings || !appSettings.fileUploadDisabled)
-    return next();
+  // if (!req.body.planKey || !appSettings || !appSettings.fileUploadDisabled)
+  //   return next();
 
   throw new ApiError(403, "Free Plan upgrading is temporarily not available!");
 };
