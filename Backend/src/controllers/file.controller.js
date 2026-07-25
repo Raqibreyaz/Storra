@@ -13,7 +13,7 @@ import {
   deleteObject,
   getObjectPresignedUrl,
   getObjectSize,
-} from "../services/aws.service.js";
+} from "../services/objectStorage.service.js";
 import {
   SAFE_INLINE_TYPES,
   RENDER_AS_TEXT,

@@ -7,7 +7,7 @@ import ApiError from "../helpers/apiError.js";
 import FileShare from "../models/fileShare.model.js";
 import Subscription from "../models/subscription.model.js";
 
-import { deleteObject } from "../services/aws.service.js";
+import { deleteObject } from "../services/objectStorage.service.js";
 import {
   cancelSubscription,
   pauseSubscription,

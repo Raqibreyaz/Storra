@@ -1,4 +1,4 @@
-import { deleteObjects } from "./aws.service.js";
+import { deleteObjects } from "./objectStorage.service.js";
 import mongoose from "mongoose";
 import Directory from "../models/directory.model.js";
 import File from "../models/file.model.js";
