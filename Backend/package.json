@@ -31,10 +31,10 @@
     "mongoose": "^9.1.5",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
-    "nodemailer": "^8.0.1",
     "rate-limit-redis": "^4.3.1",
     "razorpay": "^2.9.6",
     "redis": "^5.11.0",
+    "resend": "^6.18.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -23,7 +23,7 @@ export default async function sendOtpService(email) {
     </div>
   `;
 
-  const messageId = await sendEmail(email, "Storage App OTP", html);
+  const messageId = await sendEmail(email, "Storra OTP", html);
 
   return { success: true, message: "OTP sent successfully!", messageId };
 }

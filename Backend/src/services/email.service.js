@@ -1,24 +1,18 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    type: "OAuth2",
-    user: process.env.NODEMAILER_EMAIL,
-    refreshToken: process.env.NODEMAILER_REFRESH_TOKEN,
-    clientId: process.env.NODEMAILER_CLIENT_ID,
-    clientSecret: process.env.NODEMAILER_CLIENT_SECRET,
-  },
-});
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const SENDER_EMAIL = process.env.SENDER_EMAIL;
+
+const resend = new Resend(RESEND_API_KEY);
 
 export default async function sendEmail(email, subject, htmlMessage) {
-  const info = await transporter.sendMail({
-    from: `Storage App ${process.env.NODEMAILER_EMAIL}`,
-    to: email,
+  const info = await resend.emails.send({
+    from: `Storra <no-reply@${SENDER_EMAIL}>`,
+    to: [email],
     subject,
     html: htmlMessage,
   });
 
-  console.log(info.messageId);
+  console.log(info.data.id);
   return info.messageId;
 }
