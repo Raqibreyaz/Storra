@@ -15,7 +15,7 @@ const faqs = [
   },
   {
     q: "Do you proxy file data through your servers?",
-    a: "No. Storra uses presigned S3 URLs, so your files travel directly from your browser to AWS S3. Our servers only sign the upload URL and record metadata — they never see or store the file bytes themselves.",
+    a: "No. Storra uses presigned URLs, so your files travel directly from your browser to Cloudflare R2. Our servers only sign the upload URL and record metadata — they never see or store the file bytes themselves.",
   },
 ];
 

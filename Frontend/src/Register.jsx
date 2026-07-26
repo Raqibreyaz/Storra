@@ -192,6 +192,14 @@ const Register = () => {
             </>
           )}
         </button>
+
+        {/* Terms agreement */}
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-1">
+          By creating an account, you agree to our{" "}
+          <Link to="/terms" className="text-blue-600 dark:text-blue-400 hover:underline">Terms of Service</Link>
+          {" "}and{" "}
+          <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">Privacy Policy</Link>.
+        </p>
       </form>
 
       {/* Divider */}

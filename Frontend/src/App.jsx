@@ -13,11 +13,21 @@ import UpdatePassword from "./UpdatePassword";
 import Plans from "./Plans";
 import Dashboard from "./Dashboard";
 import LandingPage from "./LandingPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <LandingPage />,
+  },
+  {
+    path: "/privacy",
+    element: <PrivacyPolicyPage />,
+  },
+  {
+    path: "/terms",
+    element: <TermsOfServicePage />,
   },
   {
     path: "/register",

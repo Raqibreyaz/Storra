@@ -380,8 +380,9 @@ const Plans = () => {
         data: subscriptionData,
     } = useQuery({
         queryKey: ["subscription"],
-        queryFn: getSubscription,
+        queryFn: () => getSubscription({ skipAuthRedirect: true }).catch(() => null),
         staleTime: 2 * 60 * 1000,
+        retry: false,
     });
 
     const plans = plansData?.plans ?? [];

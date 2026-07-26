@@ -19,7 +19,7 @@ export default function Hero() {
           </h1>
 
           <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed max-w-xl transition-colors">
-            Upload directly to S3, keep billing in sync with usage, and stop
+            Upload directly to Cloudflare R2, keep billing in sync with usage, and stop
             worrying about quota edge cases.
           </p>
 
@@ -109,7 +109,7 @@ export default function Hero() {
                 {/* Tags */}
                 <div className="flex gap-2 mt-auto flex-wrap">
                   <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-400/20 px-2 py-0.5 rounded-full">
-                    Direct S3 upload
+                    Direct R2 upload
                   </span>
                   <span className="text-[10px] bg-purple-500/10 text-purple-400 border border-purple-400/20 px-2 py-0.5 rounded-full">
                     Subscription in sync

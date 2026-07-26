@@ -43,9 +43,11 @@ client.interceptors.response.use(
     const errorCode = data?.errorCode || "UNKNOWN_ERROR";
     const message = data?.error || `Request failed (${status})`;
 
-    // Only redirect w  hen the session is missing/expired (authenticate middleware),
+    const skipAuthRedirect = error.config?.skipAuthRedirect;
+
+    // Only redirect when the session is missing/expired (authenticate middleware),
     // NOT for other 401s like invalid credentials on login/register pages.
-    if (status === 401 && errorCode === "AUTH_REQUIRED") {
+    if (status === 401 && errorCode === "AUTH_REQUIRED" && !skipAuthRedirect) {
       window.location.href = "/login";
       return Promise.reject(new ApiError(message, errorCode, 401));
     }
@@ -55,24 +57,24 @@ client.interceptors.response.use(
 );
 
 // ─── Public helpers (return parsed data directly, throw ApiError on failure) ─
-export async function apiGet(endpoint) {
-  return client.get(endpoint);
+export async function apiGet(endpoint, config) {
+  return client.get(endpoint, config);
 }
 
-export async function apiPost(endpoint, body) {
-  return client.post(endpoint, body);
+export async function apiPost(endpoint, body, config) {
+  return client.post(endpoint, body, config);
 }
 
-export async function apiPatch(endpoint, body) {
-  return client.patch(endpoint, body);
+export async function apiPatch(endpoint, body, config) {
+  return client.patch(endpoint, body, config);
 }
 
-export async function apiPut(endpoint, body) {
-  return client.put(endpoint, body);
+export async function apiPut(endpoint, body, config) {
+  return client.put(endpoint, body, config);
 }
 
-export async function apiDelete(endpoint, body) {
-  return client.delete(endpoint, { data: body });
+export async function apiDelete(endpoint, config) {
+  return client.delete(endpoint, config);
 }
 
 /**

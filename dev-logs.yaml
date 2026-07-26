@@ -79,8 +79,10 @@ features:
   - feature: deployment script need to be adaptible, if new packages are installed then it should do 'pnpm install' or if no new packages are installed then it should skip it
   - fix: in the webhook payload, github sends all the commits + head_commit in the push, head_commit is only the latest commit happened in the push, so we need to check each commit and if packages.json appears in any(created,removed,modified) then we will mark installation as required
 
-  - grace period just means, time left to be demoted to free plan limits
-  - on basis of current scenario of the app, it is not required to user scheduled updation of subscription
+  - feature: Migration from S3 to R2
+    how: 
+      - for migrating object storage from s3 to cloudflare r2, it was really straight forward, all it takes to give the provider name(in my case AWS S3), bucket_name, access_key_id, access_key_secret of the source bucket, and access_key_id, access_key_secret, bucket_name of the destination bucket, make sure to make the credentials short time scoped so that they will expire automatically
+      - R2 has in-built caching optimisation with a custom domain, so we dont need to worry about adding a separate CDN like we did on AWS with Cloudfront
 
 issues:
   - issue: multer was not checking for file upload limit size while file upload in progress, it checks after getting whole file
@@ -215,7 +217,17 @@ issues:
   - issue: due to the global file allowance we needed to remove the checkAuthentication middleware, so this caused even an authenticated user to not access his files as the req.loggedInUser is not populated
   - fix: moved the allowOnlyAuthenticatedUser middleware main logic to a reusable helper function "checkAuthentication" and used it in requireAction middleware to only allow authenticated users
 
-LOGS:  
+  - issue: using Gmail OAuth2.0 was a pain, because of usage limits and manual updation of refresh token for a test app at every week
+    fix: migrated to resend with a custom domain (mail.raquibreyaz.in) which increases the limit + no need for refresh token
+
+  - issue: SameSite:none cookies are usually vulnerable to CSRF if not handled correctly
+    fix: moved to more stricter side, SameSite:strict & Domain:[parent-domain] with making the frontend and backend at same parent domain
+
+INFO:  
+  - grace period just means, time left to be demoted to free plan limits
+
+  - on basis of current scenario of the app, it is not required to user scheduled updation of subscription
+
   - i found a very interesting bug while uploading file to s3, actually i used mongodb id as s3 object key, so instead of id.toString() i did String(id) and behavior is different, String(id) even added double quotes in the objectKey, means s3 object with quoted name but when i did .toString then all things worked expectedly
 
-  - for migrating object storage from s3 to cloudflare r2, it was really straight forward, all it takes to give the provider name(in my case AWS S3), bucket_name, access_key_id, access_key_secret of the source bucket, and access_key_id, access_key_secret, bucket_name of the destination bucket, make sure to make the credentials short time scoped so that they will expire automatically
+  - currently no edge location based optimisation is done as direct presigned url is used with no custom domain

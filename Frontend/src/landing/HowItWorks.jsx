@@ -6,8 +6,8 @@ const steps = [
   },
   {
     n: "02",
-    title: "Upload directly to S3",
-    body: "Drag and drop files into Storra. We sign a presigned URL on the backend and your browser uploads straight to S3 — fast and bandwidth-efficient.",
+    title: "Upload directly to R2",
+    body: "Drag and drop files into Storra. We sign a presigned URL on the backend and your browser uploads straight to Cloudflare R2 — fast and bandwidth-efficient.",
   },
   {
     n: "03",

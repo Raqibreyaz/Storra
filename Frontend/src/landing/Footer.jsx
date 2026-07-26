@@ -40,8 +40,8 @@ export default function Footer() {
                 {[
                   { label: "Docs", href: "#" },
                   { label: "GitHub", href: "#" },
-                  { label: "Privacy", href: "#" },
-                  { label: "Terms", href: "#" },
+                  { label: "Privacy", href: "/privacy" },
+                  { label: "Terms", href: "/terms" },
                 ].map((l) => (
                   <li key={l.label}>
                     <a href={l.href} className="hover:text-gray-900 dark:hover:text-white transition-colors">
@@ -54,7 +54,7 @@ export default function Footer() {
           </div>
 
           <p className="mt-6 text-center text-xs text-gray-600">
-            Built with Node.js, React, AWS S3, and Razorpay.
+            Built with Node.js, React, Cloudflare R2, and Razorpay.
           </p>
         </div>
       </footer>

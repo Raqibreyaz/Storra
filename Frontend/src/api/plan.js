@@ -5,7 +5,7 @@ export const getPlans = () => apiGet("/plans");
 export const createSubscription = (planKey) =>
   apiPost("/subscriptions", { planKey });
 
-export const getSubscription = () => apiGet("/subscriptions");
+export const getSubscription = (options) => apiGet("/subscriptions", options);
 
 export const cancelSubscription = (cancelAtPeriodEnd) =>
   apiPut("/subscriptions/cancel", { cancelAtPeriodEnd });

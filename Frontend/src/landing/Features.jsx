@@ -7,7 +7,7 @@ const benefits = [
   {
     emoji: "⚡",
     title: "Direct, efficient uploads",
-    body: "Files go straight to S3 via presigned URLs, with backend-enforced content-type and size checks before signing.",
+    body: "Files go straight to Cloudflare R2 via presigned URLs, with backend-enforced content-type and size checks before signing.",
   },
   {
     emoji: "🔄",
@@ -46,14 +46,14 @@ const featureRows = [
     flip: false,
   },
   {
-    title: "Direct S3 uploads with guardrails",
-    text: "Your browser talks directly to S3 using a presigned URL signed by the Storra backend. The backend validates content-type and file size before signing, so bad actors can't sneak in oversized or mistyped files.",
+    title: "Direct R2 uploads with guardrails",
+    text: "Your browser talks directly to Cloudflare R2 using a presigned URL signed by the Storra backend. The backend validates content-type and file size before signing, so bad actors can't sneak in oversized or mistyped files.",
     visual: (
       <div className="bg-white dark:bg-gray-800/60 border border-gray-200 dark:border-white/10 rounded-xl p-5 flex flex-col gap-3 font-mono text-xs transition-colors">
         <div className="flex items-center gap-3">
           <span className="bg-blue-500/10 text-blue-400 border border-blue-400/20 px-3 py-1.5 rounded-lg">Browser</span>
           <span className="text-gray-600">──────▶</span>
-          <span className="bg-orange-500/10 text-orange-400 border border-orange-400/20 px-3 py-1.5 rounded-lg">S3</span>
+          <span className="bg-orange-500/10 text-orange-400 border border-orange-400/20 px-3 py-1.5 rounded-lg">R2</span>
         </div>
         <div className="text-[10px] text-gray-500 pl-1">via presigned URL (PUT, size+type checked)</div>
         <div className="h-px bg-white/5" />
