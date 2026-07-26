@@ -197,12 +197,10 @@ export const githubAuth = async (req, res, next) => {
   const github_scope = process.env.GITHUB_SCOPE;
   const state = crypto.randomBytes(32).toString("hex");
 
-  // const domain = process.env.SITE_DOMAIN || ".local.com";
-
   // Store state in signed cookie (or Redis)
   res.cookie("oauth_state", state, {
     httpOnly: true,
-    sameSite: "none",
+    sameSite: "strict",
     signed: true,
     secure: process.env.NODE_ENV !== "DEVELOPMENT",
   });
