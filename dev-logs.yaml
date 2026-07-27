@@ -223,6 +223,9 @@ issues:
   - issue: SameSite:none cookies are usually vulnerable to CSRF if not handled correctly
     fix: moved to more stricter side, SameSite:strict & Domain:[parent-domain] with making the frontend and backend at same parent domain
 
+  - issue: on deploying backend to vercel serverless, i got errors like the internally got crashed or the app failed even at build step
+    fix: vercel expects a vercel.json file for vercel's api routing to each lambda function, and entry files for building each lambda function, also if pnpm-workspace.yaml is present then it expects 
+
 INFO:  
   - grace period just means, time left to be demoted to free plan limits
 
