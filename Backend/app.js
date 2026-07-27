@@ -12,6 +12,10 @@ try {
 import app from "./server.js";
 
 const port = process.env.PORT || 8080;
-app.listen(port, "0.0.0.0", () =>
-  console.log(`server is running at port ${port}`),
-);
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, "0.0.0.0", () =>
+    console.log(`server is running at port ${port}`),
+  );
+}
+
+export default app;
