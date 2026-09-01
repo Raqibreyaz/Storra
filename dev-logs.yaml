@@ -245,6 +245,10 @@ issues:
     Node.js process exited with exit status: 1. The logs above can help with debugging the issue."
   fix: removed jsdom and dompurify entirely, as they were being used on filename etc type validations and are resource heavy, so we will not allow html type filenames at all.
 
+  - issue: cookieParser(secret) works locally but fails in vercel serverless
+    fix: Vercel parses the incoming Cookie header and puts the result into that object before your exported handler runs. cookie-parser then returns early and never sets req.secret or req.signedCookies, which breaks signed cookie creation and verification.
+  
+
 INFO:  
   - grace period just means, time left to be demoted to free plan limits
 
