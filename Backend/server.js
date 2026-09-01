@@ -36,7 +36,13 @@ app.use(
 );
 
 app.use(preventCsrf); //preventing CSRF, helpful when cors by-passed
-app.use(cookieParser(process.env.COOKIE_PARSER_KEY));
+
+const cookieSecret = process.env.COOKIE_PARSER_KEY?.trim();
+console.info("Cookie signing configuration:", {
+  configured: Boolean(cookieSecret),
+  length: cookieSecret?.length ?? 0,
+});
+app.use(cookieParser(cookieSecret));
 
 /** Webhooks */
 // body should be passed as raw to webhook
