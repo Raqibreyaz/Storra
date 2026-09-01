@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { strictSanitizedString } from "./common.validator.js";
+import { strictFileName, mimeType } from "./common.validator.js";
 
 export const initiateFileUploadSchema = z.object({
   body: z.object({
     fileSize: z.coerce
       .number({ error: "FileSize should be a number" })
       .min(0, { error: "FileSize cannot be negative" }),
-    fileName: strictSanitizedString("Filename"),
-    fileType: strictSanitizedString("FileType").default("application/octet-stream"),
+    fileName: strictFileName(),
+    fileType: mimeType.default("application/octet-stream"),
   }),
 });
 
@@ -21,7 +21,7 @@ export const getFileSchema = z.object({
 
 export const renameFileSchema = z.object({
   body: z.object({
-    newFilename: strictSanitizedString("Filename"),
+    newFilename: strictFileName,
   }),
 });
 

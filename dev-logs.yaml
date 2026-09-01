@@ -243,6 +243,7 @@ issues:
       code: 'ERR_REQUIRE_ESM'
     }
     Node.js process exited with exit status: 1. The logs above can help with debugging the issue."
+  fix: removed jsdom and dompurify entirely, as they were being used on filename etc type validations and are resource heavy, so we will not allow html type filenames at all.
 
 INFO:  
   - grace period just means, time left to be demoted to free plan limits
