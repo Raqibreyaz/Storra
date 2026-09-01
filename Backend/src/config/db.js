@@ -1,11 +1,37 @@
 import mongoose from "mongoose";
 
-export default async function connectDB() {
-  const mongodbUri =
-    "mongodb://raquib:raquib@localhost:27017/storageApp?replicaSet=myReplicaSet&authSource=storageApp";
-  await mongoose.connect(process.env.MONGODB_URI || mongodbUri);
+const globalForMongoose = globalThis;
 
-  console.log("Database Connected!");
+const cached = globalForMongoose.mongoose ?? {
+  connection: null,
+  promise: null,
+};
+
+globalForMongoose.mongoose = cached;
+
+export default async function connectDB() {
+  if (cached.connection) return cached.connection;
+
+  const mongodbUri = process.env.MONGODB_URI;
+  if (!mongodbUri) {
+    throw new Error("MONGODB_URI is not configured");
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(mongodbUri, {
+      serverSelectionTimeoutMS: 10_000,
+    });
+  }
+
+  try {
+    cached.connection = await cached.promise;
+    console.log("Database connected");
+    return cached.connection;
+  } catch (error) {
+    // Permit a later invocation to retry after a transient connection failure.
+    cached.promise = null;
+    throw error;
+  }
 }
 
 process.on("SIGINT", async () => {

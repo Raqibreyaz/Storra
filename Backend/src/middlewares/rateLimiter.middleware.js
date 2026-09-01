@@ -24,9 +24,13 @@ function createLimiter({ windowMs, limit, errorMsg, prefix, keyGenerator }) {
     standardHeaders: "draft-7",
     legacyHeaders: false,
     message: { error: errorMsg, errorCode: "RATE_LIMITED" },
-    store: new RedisStore({
-      sendCommand: (...args) => redisClient.sendCommand(args.map(String)),
-      prefix: `rl:${prefix}:`,
+    // A missing REDIS_URI must not stop Vercel from loading the function.
+    // express-rate-limit uses its in-memory store when no Redis client exists.
+    ...(redisClient && {
+      store: new RedisStore({
+        sendCommand: (...args) => redisClient.sendCommand(args.map(String)),
+        prefix: `rl:${prefix}:`,
+      }),
     }),
     ...(keyGenerator && { keyGenerator }),
   });

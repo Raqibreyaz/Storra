@@ -1,26 +1,27 @@
 import { createClient } from "redis";
 
 const redisUrl = process.env.REDIS_URI;
+const redisClient = redisUrl ? createClient({ url: redisUrl }) : null;
 
-const redisClient = createClient({ url: redisUrl });
+if (redisClient) {
+  redisClient.on("error", (error) => {
+    console.error("Redis client error:", error.message);
+  });
 
-redisClient.on("error", (error) => {
-  console.error("Redis client error:", error.message);
-});
+  redisClient.on("reconnecting", () => {
+    console.warn("Redis: attempting to reconnect...");
+  });
 
-redisClient.on("reconnecting", () => {
-  console.warn("Redis: attempting to reconnect...");
-});
+  redisClient.on("ready", () => {
+    console.log("Redis: connection ready.");
+  });
 
-redisClient.on("ready", () => {
-  console.log("Redis: connection ready.");
-});
-
-await redisClient.connect();
-console.log("Memory Store Connected!");
+  await redisClient.connect();
+  console.log("Memory store connected");
+}
 
 process.on("SIGINT", async () => {
-  await redisClient.quit();
+  if (redisClient?.isOpen) await redisClient.quit();
   process.exit(0);
 });
 
