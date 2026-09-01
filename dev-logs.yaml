@@ -84,6 +84,9 @@ features:
       - for migrating object storage from s3 to cloudflare r2, it was really straight forward, all it takes to give the provider name(in my case AWS S3), bucket_name, access_key_id, access_key_secret of the source bucket, and access_key_id, access_key_secret, bucket_name of the destination bucket, make sure to make the credentials short time scoped so that they will expire automatically
       - R2 has in-built caching optimisation with a custom domain, so we dont need to worry about adding a separate CDN like we did on AWS with Cloudfront
 
+  - feature: db connection reusage for same lambda instance and retry-able in case connection fails at first
+    how: cached the db connection and added the connectDB() call inside lambda handler instead of outside so that if connection fails at first then still the lambda will be invokable for next request unlike we were shutting down the whole process when connection fails
+
 issues:
   - issue: multer was not checking for file upload limit size while file upload in progress, it checks after getting whole file
   - fix: used custom file upload logic, received whole file using streams + added chunk level condition to discard file if exceeds size limit
