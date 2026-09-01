@@ -38,11 +38,15 @@ app.use(
 app.use(preventCsrf); //preventing CSRF, helpful when cors by-passed
 
 const cookieSecret = process.env.COOKIE_PARSER_KEY?.trim();
-console.info("Cookie signing configuration:", {
-  configured: Boolean(cookieSecret),
-  length: cookieSecret?.length ?? 0,
+
+const parseCookies = cookieParser(cookieSecret);
+app.use((req, res, next) => {
+  // Vercel can populate req.cookies before Express middleware runs.
+  // cookie-parser then returns early and never sets req.secret or
+  // req.signedCookies, which breaks signed cookie creation and verification.
+  if (req.cookies) delete req.cookies;
+  parseCookies(req, res, next);
 });
-app.use(cookieParser(cookieSecret));
 
 /** Webhooks */
 // body should be passed as raw to webhook
