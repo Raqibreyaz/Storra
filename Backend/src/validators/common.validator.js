@@ -1,5 +1,4 @@
 import { z } from "zod";
-import dataSanitizer from "../helpers/dataSanitizer.js";
 
 /**
  * A Zod string schema that validates and sanitizes input.
